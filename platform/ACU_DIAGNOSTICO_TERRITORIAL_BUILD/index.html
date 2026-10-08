@@ -1,0 +1,139 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta name="acu-candidate-version" content="R78-REVISAO-20261007">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Plataforma multicidade de diagnóstico territorial da Agenda Cidade UNICEF.">
+  <meta name="theme-color" content="#113f67">
+  <title>ACU R78 — Revisão colaborativa</title>
+  <link rel="stylesheet" href="app/assets/leaflet/leaflet.css">
+  <link rel="stylesheet" href="app/css/styles.css?v=20260928r64">
+  <link rel="stylesheet" href="app/css/panorama_r71.css">
+  <link rel="stylesheet" href="app/css/map_r72.css">
+  <link rel="stylesheet" href="app/assets/maplibre/maplibre-gl.css">
+  <link rel="stylesheet" href="app/css/urban_r71r1.css">
+<link rel="stylesheet" href="app/css/r73.css">
+<link rel="stylesheet" href="app/css/r74.css">
+<link rel="stylesheet" href="app/css/r75.css">
+<link rel="stylesheet" href="app/css/r76.css"><link rel="stylesheet" href="app/css/network_r77.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+  <div id="loading" class="loading" role="status" aria-live="polite">Carregando dados territoriais…</div>
+
+  <section id="landing" class="landing" aria-labelledby="landing-title">
+    <div class="landing-rail" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="landing-copy">
+      <p class="eyebrow">Agenda Cidade UNICEF</p>
+      <h1 id="landing-title">Diagnóstico<br><em>territorial</em></h1>
+      <p class="lead">Explore características demográficas, sociais, educacionais, territoriais e de acesso a serviços nos territórios da Agenda Cidade UNICEF.</p>
+      <p class="method-note">Leitura descritiva para gestão e planejamento. Os indicadores não demonstram impacto causal.</p>
+    </div>
+    <div class="city-grid" id="city-grid" aria-label="Selecione uma cidade"></div>
+    <footer class="landing-footer"><span>Ciclo 2025–2028</span><span>Baseline territorial multicidade</span></footer>
+  </section>
+
+  <div id="platform" class="platform" hidden>
+    <header class="topbar">
+      <button class="brand" id="home-button" type="button" aria-label="Voltar à seleção de cidades">
+        <span class="brand-mark" aria-hidden="true">AC</span>
+        <span><strong>Agenda Cidade UNICEF</strong><small>Diagnóstico Territorial</small></span>
+      </button>
+      <div class="breadcrumb" aria-label="Localização atual">
+        <span id="crumb-city">Cidade</span><span aria-hidden="true">/</span><strong id="crumb-territory">Território</strong>
+      </div>
+      <div class="top-actions">
+        <label class="city-switch"><span>Cidade</span><select id="city-select" aria-label="Trocar cidade"></select></label>
+        <button class="text-button guide-button" id="city-guide-button" type="button">Como ler esta cidade</button>
+        <button class="icon-button" id="search-button" type="button" aria-label="Abrir busca"><span aria-hidden="true">⌕</span></button>
+        <button class="text-button" id="export-button" type="button">Exportar CSV</button>
+        <button class="icon-button" id="print-button" type="button" aria-label="Imprimir visão atual"><span aria-hidden="true">↗</span></button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <nav class="side-nav" aria-label="Módulos do diagnóstico">
+        <button data-module="panorama" class="active"><span>01</span>Panorama</button>
+        <button id="map-tools-button" class="map-tools-nav-button" type="button" hidden><span aria-hidden="true">↳</span>Camadas e filtros</button>
+        <button data-module="population"><span>02</span>População e adolescentes</button>
+        <button data-module="living"><span>03</span>Condições de vida</button>
+        <button data-module="income" hidden><span>04</span>Renda e condições socioeconômicas</button>
+        <button data-module="education"><span>04</span>Educação</button>
+        <button data-module="equipment"><span>05</span>Equipamentos e serviços</button>
+        <button data-module="violence"><span>06</span>Violências e saúde</button>
+        <button data-module="pct"><span>07</span>Povos e territórios tradicionais</button>
+        <button data-module="compare"><span>08</span>Comparar territórios</button>
+        <button data-module="assistant"><span>09</span>Assistente de diagnóstico</button>
+        <button data-module="sources"><span>10</span>Fontes e metodologia</button>
+      </nav>
+
+      <main id="main" class="main" tabindex="-1">
+        <section class="context-bar" aria-label="Filtros territoriais e temáticos">
+          <label><span>Território</span><select id="territory-select"></select></label>
+          <label><span>Tema</span><select id="theme-select"></select></label>
+          <label class="indicator-control"><span>Indicador</span><select id="indicator-select"></select></label>
+          <button id="reset-map" class="quiet-button" type="button">Restaurar mapa</button>
+        </section>
+
+        <div id="r76-data-situation"><a href="coverage_r76.html" target="_blank" rel="noopener">Situação dos dados</a><small>Candidata experimental · homologação não documentada</small><span role="status"></span></div>
+        <section id="module-view" class="module-view" aria-live="polite"></section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
+    <form method="dialog" class="dialog-head"><h2 id="search-title">Busca nesta cidade</h2><button aria-label="Fechar">×</button></form>
+    <label class="search-field"><span class="sr-only">Buscar escola, equipamento, código ou território</span><input id="search-input" type="search" placeholder="Escola, INEP, equipamento, CNES, CadSUAS, território…" autocomplete="off"></label>
+    <div id="search-results" class="search-results"></div>
+  </dialog>
+
+  <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title">
+    <form method="dialog" class="dialog-head"><h2 id="detail-title">Ficha</h2><button aria-label="Fechar">×</button></form>
+    <div id="detail-content"></div>
+  </dialog>
+
+  <dialog id="guide-dialog" class="guide-dialog" aria-labelledby="guide-title">
+    <form method="dialog" class="dialog-head"><h2 id="guide-title">Como ler esta cidade</h2><button aria-label="Fechar">×</button></form>
+    <nav class="guide-tabs" aria-label="Guias de leitura">
+      <button type="button" data-guide-view="city" aria-pressed="true">Esta cidade</button>
+      <button type="button" data-guide-view="platform" aria-pressed="false">Como ler a plataforma</button>
+    </nav>
+    <div id="guide-content" class="guide-content"></div>
+  </dialog>
+
+  <script src="app/js/r79-asset-loader.js"></script>
+  <script src="app/assets/leaflet/leaflet.js"></script>
+  <script src="cities/index.js?v=20260911r56"></script>
+  <script src="app/js/policy_r75_data.js"></script><script src="app/js/policy_r75.js"></script>
+  <script src="app/analytics/analytics_engine.js"></script>
+  <script src="app/analytics/attention_engine.js"></script>
+  <script src="app/assistant/provider.js"></script>
+  <script src="app/assistant/deterministic_provider.js"></script>
+  <script src="governance/city_specific_diagnostic/ACU_CITY_DIAGNOSTIC_RUNTIME.js?v=20260928r64"></script>
+  <script src="cities/belem/equipment_presentation.js"></script>
+  <script src="cities/belem/indicator_presentation_groups.js"></script>
+  <script src="cities/belem/violence_periods.js"></script>
+  <script src="cities/belem/citywide_spatial.js"></script>
+  <script src="app/js/households_r69_core.js"></script>
+  <script src="app/js/households_r70_config.js"></script>
+  <script src="app/js/panorama_r71_colors.js"></script>
+  <script src="app/assets/maplibre/maplibre-gl.js"></script>
+  <script src="app/assets/maplibre/leaflet-maplibre-gl.js"></script>
+  <script src="app/js/urban_style_r71r2.js"></script>
+  <script src="app/js/context_r71.js"></script>
+  <script src="app/js/map_r72r1.js"></script>
+  <script src="app/js/sync_r73.js"></script><script src="app/js/urban_r71r1.js"></script>
+  <script src="app/js/map_r72.js"></script>
+  <script src="app/js/panorama_r71.js"></script>
+  <script src="app/js/display_r73.js"></script>
+  <script src="app/js/context_r74_data.js"></script>
+  <script src="app/js/context_r74.js"></script>
+  <script src="app/js/survey_r75_data.js"></script><script src="app/js/context_r75.js"></script>
+  <script src="app/js/visibility_r76r1.js"></script>
+  <script src="app/js/network_r77_data.js"></script>
+<script src="app/js/network_r77.js"></script>
+<script src="app/js/app.js?v=20261007r77"></script>
+</body>
+</html>
+

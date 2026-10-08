@@ -1,0 +1,58 @@
+/* Component roles: compact body 13px, metadata 12px, section labels 12px.
+   Existing global typography and map legend sizes remain unchanged. */
+body .acu-marker-shell .acu-semantic-marker {
+ position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ width:20px;height:20px;min-width:20px;min-height:20px;max-width:20px;max-height:20px;
+ box-sizing:border-box;border:1.5px solid #fff;outline:none;border-radius:4px;
+ box-shadow:0 1px 2px rgba(13,48,76,.35);
+}
+body .acu-marker-shell .acu-school-marker.is-priority {border:2px solid #d98324;outline:none;background:#075784;}
+body .acu-marker-shell .acu-semantic-marker svg {width:15px;height:15px;max-width:15px;max-height:15px;}
+.side-nav #map-tools-button {display:none!important;}
+.school-full-profile {font-size:12px;line-height:1.45;}
+.school-full-profile .school-full-section :is(h3,h4),.school-full-profile .entity-source-methodology h4 {font:700 12px/1.4 "Segoe UI",Arial,sans-serif;letter-spacing:0;text-transform:none;margin:0 0 7px;}
+.school-full-profile .school-full-section :is(p,dl,summary,.source-methodology-record) {font-size:12px;line-height:1.45;}
+body[data-active-module="sources"] .source-methodology-card,body[data-active-module="sources"] .documentation-note {font-size:13px;line-height:1.45;}
+body[data-active-module="sources"] :is(.source-methodology-record,.metric-source-methodology dl,.source-methodology summary) {font-size:13px;line-height:1.45;}
+body[data-active-module="sources"] .source-methodology-card small {font-size:12px;}
+body[data-active-module="violence"] #module-view {font-size:13px;line-height:1.45;}
+body[data-active-module="violence"] #module-view :is(button,select,input) {font-size:12px;}
+body[data-active-module="violence"] #module-view :is(.source-methodology-record,.metric-source-methodology dl,.source-methodology summary,.source-note) {font-size:12px;line-height:1.45;}
+body[data-active-module="violence"] #module-view .panel-title h2 {font-size:20px;}
+.assistant-layout {font-size:13px;line-height:1.45;}
+.assistant-actions button,.assistant-layout :is(input,select,button) {font-size:13px;}
+.assistant-actions button {padding:10px 12px;}
+.assistant-output {padding:18px;min-height:280px;font-size:13px;}
+.assistant-output h2 {font-size:23px;margin-top:0;}
+.assistant-output h3 {font-size:15px;}
+.assistant-output footer {font-size:12px;}
+.r73-context {background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.45;}
+.r73-context h2 {font-size:17px;margin:0 0 5px;}
+.r73-context p {margin:6px 0;}
+.r73-context small {font-size:12px;}
+.r73-context table {width:100%;border-collapse:collapse;font-size:13px;margin:8px 0;}
+.r73-context :is(th,td) {padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;}
+.r73-context :is(th,td):first-child {text-align:left;}
+.r73-context caption {text-align:left;font-weight:600;font-size:12px;}
+.r73-context details {margin-top:8px;}
+.r73-context summary {cursor:pointer;font-weight:600;}
+.r73-context .r73-context-source {font-size:12px;color:var(--muted);overflow-wrap:anywhere;}
+.r73-clip-explanation {font-size:12px;line-height:1.45;border-left:3px solid #d98324;padding-left:8px;}
+body[data-active-module="sources"] #detail-content,
+#detail-content > .governed-source-list,#detail-content > .violence-methodology-detail {font-size:13px;line-height:1.45;}
+#detail-content :is(.governed-source-list,.violence-methodology-detail) :is(p,dl,small) {font-size:13px;line-height:1.45;}
+.r73-methodology {font-size:13px;line-height:1.45;margin:10px 0;}
+.r73-methodology summary {cursor:pointer;font-weight:600;}
+@media(max-width:600px){
+ .r73-context {padding:12px;}
+ .r73-context table,.r73-context tbody,.r73-context tr,.r73-context td {display:block;}
+ .r73-context thead {display:none;}
+ .r73-context caption {display:block;width:100%;max-width:none;margin:4px 0;text-align:left;}
+ .r73-context tr {padding:8px 0;border-bottom:1px solid var(--line);}
+ .r73-context td {border:0;padding:3px 0;text-align:right;}
+ .r73-context td:first-child {font-weight:600;text-align:left;}
+ .r73-context td[data-label]::before {content:attr(data-label);float:left;font-weight:400;}
+ .school-full-profile .school-full-section dl {grid-template-columns:minmax(95px,.6fr) 1fr;}
+ .assistant-layout {grid-template-columns:1fr;}
+ .source-methodology-card {min-width:0;overflow-wrap:anywhere;}
+}
