@@ -146,10 +146,10 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r75/SURVEY_LINEAGE.json": "aef979ecdb5021abee823f459c565754de4913f3c3eb472a754f499c12ba7c17",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r75/SURVEY_SOURCE_REGISTRY.json": "3e52c696291dc3e9f69f1bcd92414a5b0c08b6f39880594df1a71bfce6d34d2a",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/index.html": "bcb817b9ae486fe9a9c8de17293695476921e253b8dc124948d77dc4909e1a6a",
-    "review-version.json": "0270569351d80530394ee32aef8e22ecab756af5da05b2e1404ba81377ac17d4",
-    "version.json": "0270569351d80530394ee32aef8e22ecab756af5da05b2e1404ba81377ac17d4"
+    "review-version.json": "6dad9e5e68762f2c92899c09ef1d0e88aeb43fb7df3b30188891da6c886714b6",
+    "version.json": "6dad9e5e68762f2c92899c09ef1d0e88aeb43fb7df3b30188891da6c886714b6"
   },
   "repository": "andemacj/painel-acu-site",
   "schema": 1,
-  "source_commit": "f50bc21dc2f1432cfac1d5b779fd836bb10ff96c"
+  "source_commit": "47c153da1f49043e7060f2515e2eea21311d8ba9"
 }
