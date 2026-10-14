@@ -245,8 +245,12 @@
   }
   function currentCell(metricId) { return metricCell(state.geographyId, metricId); }
   function effectiveCellSourceIds(cell,metric) {
-    const ids=cell&&(cell.source_ids||[cell.effective_source_id||cell.source_id])||metric&&(metric.source_ids||[metric.source_id])||[];
-    return [...new Set(ids.filter(Boolean))];
+    const observationIds=(cell?.source_ids||[]).filter(Boolean);
+    if(observationIds.length)return [...new Set(observationIds)];
+    const observationId=cell?.effective_source_id||cell?.source_id;
+    if(observationId)return [observationId];
+    const indicatorIds=(metric?.source_ids||[]).filter(Boolean);
+    return [...new Set(indicatorIds.length?indicatorIds:[metric?.source_id].filter(Boolean))];
   }
   function effectiveMetricTrace(metric,geographyId=state.geographyId) {
     const cell=metric&&metricCell(geographyId,metric.indicator_id),sourceIds=effectiveCellSourceIds(cell,metric);
@@ -292,9 +296,38 @@
   function equipmentUniverse() {
     const adapter=belemSpatialAdapter();return adapter?adapter.equipment.map(uiEquipment):(state.data.equipment||[]);
   }
-  function equipmentMatchesFilters(item) {
-    const filters=state.equipmentFilters||{};
-    return (R77.equipmentMatch(item,state)??(!filters.category||item.category===filters.category))&&(!filters.subcategory||item.subcategory===filters.subcategory)&&(!filters.status||(item.operational_status||item.status)===filters.status)&&(!filters.governmentLevel||item.government_level===filters.governmentLevel);
+  function equipmentMatchesFilters(item,filters=state.equipmentFilters,omit=null) {
+    const selected=omit==="category"?{...filters,category:"",categories:null}:filters;
+    return (R77.equipmentMatch(item,{...state,equipmentFilters:selected})??(!selected.category||item.category===selected.category))&&(omit==="subcategory"||!selected.subcategory||item.subcategory===selected.subcategory)&&(omit==="status"||!selected.status||(item.operational_status||item.status)===selected.status)&&(omit==="governmentLevel"||!selected.governmentLevel||item.government_level===selected.governmentLevel);
+  }
+  function compactMapControls() {
+    const tools=$(".r71-map-tools"),panel=tools?.querySelector(".map-control-panel"),period=tools?.querySelector(":scope>#violence-context-slot");
+    if(panel&&period)panel.prepend(period);
+  }
+  function equipmentFacetValue(item,key) {
+    return key==="status"?(item.operational_status||item.status):key==="governmentLevel"?item.government_level:item[key];
+  }
+  function synchronizeEquipmentFacets(rows,changed=null) {
+    const filters=state.equipmentFilters,children=["subcategory","status","governmentLevel"];
+    // A new parent/choice wins over an incompatible older combination.
+    if(!rows.some(item=>equipmentMatchesFilters(item,filters))){
+      for(const key of children)if(key!==changed)filters[key]="";
+      if(changed&&changed!=="category"&&!rows.some(item=>equipmentMatchesFilters(item,filters)))filters[changed]="";
+    }
+    const fields={category:{suffix:"category",label:"Todas as categorias"},subcategory:{suffix:"subcategory",label:"Todas as subcategorias"},status:{suffix:"status",label:"Todos os status"},governmentLevel:{suffix:"government",label:"Todos os níveis governamentais"}};
+    for(const [key,field] of Object.entries(fields)){
+      // Category is the parent; descendants constrain each other within it.
+      const eligible=key==="category"?rows:rows.filter(item=>equipmentMatchesFilters(item,filters,key));
+      const values=[...new Set(eligible.map(item=>equipmentFacetValue(item,key)).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),"pt-BR"));
+      if(filters[key]&&!values.includes(filters[key]))filters[key]="";
+      for(const prefix of ["map-equipment-","equipment-"]){
+        const select=$("#"+prefix+field.suffix);if(!select)continue;
+        const selected=filters[key]||"";
+        select.innerHTML=`<option value="">${esc(field.label)}</option>`+values.map(value=>`<option value="${esc(value)}" ${value===selected?"selected":""}>${esc(key==="category"?publicEquipmentCategory(value):key==="governmentLevel"?value.replaceAll("_"," "):value)}</option>`).join("");
+        select.value=selected;select.disabled=values.length===0;
+      }
+    }
+    state.equipmentFilter=filters.category;
   }
   function schoolRowsForContext(context=currentGeo(),options={}) {
     const adapter=belemSpatialAdapter();
@@ -842,7 +875,7 @@
     cards.push(kpi("Escolas WASH classificáveis",washClassifiable,municipality?"Infraestrutura declarada no Censo Escolar 2025; não é resultado programático UNICEF.":"Somente escolas espacialmente identificadas no recorte; ausência de marcador não significa ausência de escola.",municipality?"AVAILABLE":"PARTIAL_SPATIAL_COVERAGE",schoolSourceIds.length?schoolSourceIds:["SRC_INEP_CENSO_ESCOLAR_2025_V2"],"INEP — Censo Escolar 2025","wash_classifiable"));
     if(state.mapIndicator){
       const displayId=presentationMetricId()||state.mapIndicator,metric=metricById(displayId)||metricById(state.mapIndicator),cell=mapDisplayCell(state.geographyId,state.mapIndicator),sourceIds=effectiveCellSourceIds(cell,metric),activePeriod=selectedViolencePeriod(state.mapIndicator);
-      if(metric)cards.push(kpi(`Indicador ativo · ${metric.label}`,A.isAvailable(cell)?format(cell.value,cell.unit||metric.unit):"N/D",`${activePeriod?.period_label||metric.period||"Período N/D"} · ${A.isAvailable(cell)?(cell.source_file||shortSourceName(cell.effective_source_id||cell.source_id||activePeriod?.source_id||metric.source_id)):ndExplanation(cell)}`,A.isAvailable(cell)?cell.status:"N/D",sourceIds.length?sourceIds:[activePeriod?.source_id].filter(Boolean),null,"active_indicator"));
+      if(metric)cards.push(kpi(`Indicador ativo · ${metric.label}`,A.isAvailable(cell)?format(cell.value,cell.unit||metric.unit):"N/D",`${activePeriod?.period_label||metric.period||"Período N/D"} · ${A.isAvailable(cell)?(cell.source_file||shortSourceName(sourceById(cell.effective_source_id||cell.source_id||activePeriod?.source_id||sourceIds[0]||metric.source_id))):ndExplanation(cell)}`,A.isAvailable(cell)?cell.status:"N/D",sourceIds.length?sourceIds:[activePeriod?.source_id].filter(Boolean),null,"active_indicator"));
     }
     return cards.join("");
   }
@@ -1468,7 +1501,7 @@
   function installMapResizeObserver() {
     if(state.mapResizeObserver){state.mapResizeObserver.disconnect();state.mapResizeObserver=null;}
     if(!mapIsMounted()||typeof ResizeObserver!=="function")return;
-    if(state.module==="panorama"){window.ACU_R71_PANORAMA?.mount(panoramaContext());committedMapSelection={map:state.map,selection:mapSelection()};}
+    if(state.module==="panorama"){window.ACU_R71_PANORAMA?.mount(panoramaContext());compactMapControls();committedMapSelection={map:state.map,selection:mapSelection()};}
     state.mapPhysicalSize=mapContainerSize();
     state.mapResizeObserver=new ResizeObserver(()=>{
       if(!mapIsMounted())return;
@@ -1529,7 +1562,7 @@
         if(oldTerritories)map.removeLayer(oldTerritories);if(oldLabels)map.removeLayer(oldLabels);
       }else if(state.layers.territories)ACU_R72.animate(state.layers.territories,mapStyle);
       refreshTerritorialLabels();refreshMapMeasureControl();refreshViolenceContext();renderMapLegend();refreshPanoramaSummary();refreshMapAnalyticalArtifacts();
-      if(module==='panorama')ACU_R71_PANORAMA.commit(context,prepared);
+      if(module==='panorama'){ACU_R71_PANORAMA.commit(context,prepared);compactMapControls();}
       if(!housingSelected())refreshValueLabels();
       updateHash();committedMapSelection={map,selection:mapSelection()};map._r72LastError=null;updateStatus('');
       const audit=recordViewportAudit(action,before,false);publishQaSnapshot();return audit;
@@ -1644,8 +1677,8 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
     $$('[data-map-scale]').forEach(button=>button.addEventListener("click",()=>setComparisonGeographyLevel(button.dataset.mapScale)));
     $$("[data-map-layer]").forEach(input=>input.addEventListener("change",()=>{const before=mapViewportSnapshot();state.layerState[input.dataset.mapLayer]=input.checked;refreshPointLayers();recordViewportAudit("layer_toggle",before,false);publishQaSnapshot();}));
     const dependency=$("#map-school-dependency"),stage=$("#map-school-stage"),wash=$("#map-school-wash"),differentiated=$("#map-school-differentiated"),priority=$("#map-school-priority"),category=$("#map-equipment-category"),subcategory=$("#map-equipment-subcategory"),status=$("#map-equipment-status"),government=$("#map-equipment-government");
-    const refreshFilter=()=>{const before=mapViewportSnapshot();state.equipmentFilter=state.equipmentFilters.category;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();};
-    dependency.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.dependency=dependency.value;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});stage.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.stage=stage.value;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});wash.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.wash=wash.value;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});differentiated.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.differentiated=differentiated.checked;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});priority.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.priority=priority.checked;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});category.addEventListener("change",()=>{state.equipmentFilters.category=category.value;refreshFilter();});subcategory.addEventListener("change",()=>{state.equipmentFilters.subcategory=subcategory.value;refreshFilter();});status.addEventListener("change",()=>{state.equipmentFilters.status=status.value;refreshFilter();});government.addEventListener("change",()=>{state.equipmentFilters.governmentLevel=government.value;refreshFilter();});
+    const refreshFilter=changed=>{const before=mapViewportSnapshot();synchronizeEquipmentFacets(equipmentUniverse(),changed);refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();};
+    dependency.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.dependency=dependency.value;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});stage.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.stage=stage.value;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});wash.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.wash=wash.value;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});differentiated.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.differentiated=differentiated.checked;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});priority.addEventListener("change",()=>{const before=mapViewportSnapshot();state.schoolFilters.priority=priority.checked;refreshPointLayers();recordViewportAudit("filter_change",before,false);publishQaSnapshot();});category.addEventListener("change",()=>{state.equipmentFilters.category=category.value;refreshFilter("category");});subcategory.addEventListener("change",()=>{state.equipmentFilters.subcategory=subcategory.value;refreshFilter("subcategory");});status.addEventListener("change",()=>{state.equipmentFilters.status=status.value;refreshFilter("status");});government.addEventListener("change",()=>{state.equipmentFilters.governmentLevel=government.value;refreshFilter("governmentLevel");});
     $$("[data-map-command]").forEach(button=>button.addEventListener("click",()=>{if(button.dataset.mapCommand==="reset")clearMapState();else{state.module="compare";renderModule();}}));
   }
 
@@ -1699,7 +1732,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
   }
   function equipmentRowsForMap() {
     if(!citywideComparisonEnabled())return equipmentRowsForContext(currentGeo(),{mapOnly:true,applyFilters:true});
-    return equipmentUniverse().filter(validCoordinate).filter(equipmentMatchesFilters).filter(item=>R77.mapEquipmentEligible(item,state));
+    return equipmentUniverse().filter(validCoordinate).filter(item=>equipmentMatchesFilters(item)).filter(item=>R77.mapEquipmentEligible(item,state));
   }
   function plottedSchools() {
     let rows=[];
@@ -1879,7 +1912,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
   }
   function clearPointLayers() { hideQuickCard("school",true);hideQuickCard("equipment",true);Object.values(state.markerLayers).forEach(layer=>{if(layer&&state.map&&state.map.hasLayer(layer))state.map.removeLayer(layer);});state.markerLayers={};state.markerRecords=[]; }
   function refreshPointLayers() {
-    if(!state.map)return;clearPointLayers();const messages=[];let plottedSchoolRows=[];
+    if(!state.map)return;synchronizeEquipmentFacets(equipmentUniverse());clearPointLayers();const messages=[];let plottedSchoolRows=[];
     if(state.layerState.schools||state.layerState.priority){
       plottedSchoolRows=plottedSchools();
       const markers=plottedSchoolRows.map(item=>{const marker=schoolPointMarker(item).bindTooltip(schoolQuickCard(item),{direction:"auto",offset:[0,0],className:"acu-school-popup",opacity:1,interactive:true});if(matchMedia("(max-width:700px)").matches){
@@ -1992,7 +2025,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
     if(["belem","sao_paulo","rio_de_janeiro","manaus"].includes(state.cityId)){
       const spatialCount=universe.filter(validCoordinate).length;
       $("#module-view").innerHTML=moduleHeader()+`<section class="panel panel-pad equipment-catalog"><div class="panel-title"><div><h2>Catálogo municipal não escolar de equipamentos e serviços</h2><p class="equipment-summary"><strong>${universe.length} registros catalogados</strong> · ${spatialCount} com localização espacial validada · <button type="button" class="inline-source-link" data-equipment-sources>Fontes oficiais</button></p></div><small id="equipment-count">${rows.length} registro(s)</small></div><div class="filter-row equipment-filters"><input id="equipment-filter" type="search" placeholder="Nome, endereço ou fonte"><select ${R77.active(state.cityId)?"hidden":""} id="equipment-category"><option value="">Todas as categorias</option>${categories.map(value=>`<option value="${esc(value)}" ${state.equipmentFilters.category===value?"selected":""}>${esc(publicEquipmentCategory(value))}</option>`).join("")}</select><select id="equipment-subcategory"><option value="">Todas as subcategorias</option>${subcategories.map(value=>`<option value="${esc(value)}" ${state.equipmentFilters.subcategory===value?"selected":""}>${esc(value)}</option>`).join("")}</select><select id="equipment-status"><option value="">Todos os status</option>${statuses.map(value=>`<option value="${esc(value)}" ${state.equipmentFilters.status===value?"selected":""}>${esc(value)}</option>`).join("")}</select><select id="equipment-government"><option value="">Todos os níveis governamentais</option>${governmentLevels.map(value=>`<option value="${esc(value)}" ${state.equipmentFilters.governmentLevel===value?"selected":""}>${esc(value.replaceAll("_"," "))}</option>`).join("")}</select><button id="equipment-on-map" class="secondary-button" type="button">Ver no mapa</button></div>${R77.active(state.cityId)?`<details class="r77-catalog-categories"><summary>Categorias de equipamentos · rede de proteção e apoio à mulher</summary>${R77.controls(state,"catalog")}</details>`:""}<div id="equipment-body" class="equipment-list"></div><div class="notice">Escolas não integram este catálogo. Registros sem ponto validado permanecem na lista e na busca; ausência espacial nunca significa inexistência. A completude é declarada por família de fonte e não implica suficiência de oferta.</div></section>`;
-      const draw=()=>{const q=fold($("#equipment-filter").value);state.equipmentFilters={...state.equipmentFilters,category:$("#equipment-category").value,subcategory:$("#equipment-subcategory").value,status:$("#equipment-status").value,governmentLevel:$("#equipment-government").value};state.equipmentFilter=state.equipmentFilters.category;const filtered=rows.filter(item=>(!q||fold(`${item.name} ${item.official_code} ${item.source} ${publicEquipmentAddress(item)}`).includes(q))&&equipmentMatchesFilters(item)),visible=q?filtered:filtered.slice(0,250);$("#equipment-count").textContent=`${filtered.length} registro(s) após filtros${visible.length<filtered.length?` · exibindo ${visible.length}`:""}`;$("#equipment-body").innerHTML=visible.map(item=>`<article class="equipment-list-item"><div class="equipment-category-heading">${equipmentInlineIcon(item.category)}<button class="table-link" data-detail="equipment" data-id="${esc(item.id)}">${esc(item.name)}</button></div><span>${esc(publicEquipmentCategory(item.category))} · ${esc(publicOperationalStatus(item))}</span><p>${esc(publicEquipmentAddress(item))} <b>— ${esc(item.territory||"Território não atribuído")}</b></p>${validCoordinate(item)?"":'<small class="spatial-unavailable">Localização espacial não validada.</small>'}${cardSource(item.source_ids||[item.source_id])}</article>`).join("");bindDetails();bindPublicSourceActions();};
+      const draw=event=>{const q=fold($("#equipment-filter").value);state.equipmentFilters={...state.equipmentFilters,category:$("#equipment-category").value,subcategory:$("#equipment-subcategory").value,status:$("#equipment-status").value,governmentLevel:$("#equipment-government").value};synchronizeEquipmentFacets(rows,{"equipment-category":"category","equipment-subcategory":"subcategory","equipment-status":"status","equipment-government":"governmentLevel"}[event?.target?.id]);const filtered=rows.filter(item=>(!q||fold(`${item.name} ${item.official_code} ${item.source} ${publicEquipmentAddress(item)}`).includes(q))&&equipmentMatchesFilters(item)),visible=q?filtered:filtered.slice(0,250);$("#equipment-count").textContent=`${filtered.length} registro(s) após filtros${visible.length<filtered.length?` · exibindo ${visible.length}`:""}`;$("#equipment-body").innerHTML=visible.map(item=>`<article class="equipment-list-item"><div class="equipment-category-heading">${equipmentInlineIcon(item.category)}<button class="table-link" data-detail="equipment" data-id="${esc(item.id)}">${esc(item.name)}</button></div><span>${esc(publicEquipmentCategory(item.category))} · ${esc(publicOperationalStatus(item))}</span><p>${esc(publicEquipmentAddress(item))} <b>— ${esc(item.territory||"Território não atribuído")}</b></p>${validCoordinate(item)?"":'<small class="spatial-unavailable">Localização espacial não validada.</small>'}${cardSource(item.source_ids||[item.source_id])}</article>`).join("");bindDetails();bindPublicSourceActions();};
       ["equipment-filter","equipment-category","equipment-subcategory","equipment-status","equipment-government"].forEach(id=>$("#"+id).addEventListener(id==="equipment-filter"?"input":"change",draw));$("#equipment-on-map").addEventListener("click",()=>{if(R77.active(state.cityId)){R77.openCategory();return;}state.layerState.equipment=true;state.module="panorama";renderModule();});R77.setCatalogRefresh(draw);draw();return;
     }
     $("#module-view").innerHTML=moduleHeader()+`<div class="content-grid"><section class="panel panel-pad"><div class="panel-title"><h2>Catálogo de equipamentos</h2><small id="equipment-count">${rows.length} registro(s)</small></div><div class="filter-row"><input id="equipment-filter" type="search" placeholder="Nome, código ou fonte"><select ${R77.active(state.cityId)?"hidden":""} id="equipment-category"><option value="">Todas as categorias</option>${categories.map(value=>`<option ${state.equipmentFilter===value?"selected":""}>${esc(value)}</option>`).join("")}</select><button id="equipment-on-map" class="secondary-button" type="button">Ver no mapa</button></div><div class="data-table-wrap"><table><thead><tr><th>Equipamento</th><th>Categoria</th><th>Status</th><th>Território</th><th>Completude</th><th>Mapa</th></tr></thead><tbody id="equipment-body"></tbody></table></div></section><aside class="panel panel-pad"><div class="kpi-grid">${kpi("Catalogados",rows.length,"Sem inferir suficiência")}${kpi("Espacialmente publicáveis",rows.filter(validCoordinate).length,"Pontos elegíveis")}${kpi("Sem ponto publicável",rows.filter(item=>!validCoordinate(item)).length,"Permanecem na tabela")}${kpi("Categorias",categories.length,"Famílias distintas")}</div><div class="notice">Completude é propriedade da família de fonte; PARTIAL/DISCOVERY_ONLY nunca é apresentado como universo completo. Coordenadas derivadas ou em conflito permanecem fora do mapa.</div></aside></div>`;
