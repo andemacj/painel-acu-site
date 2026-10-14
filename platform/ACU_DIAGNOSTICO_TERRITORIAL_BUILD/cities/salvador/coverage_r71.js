@@ -1,0 +1,1 @@
+window.ACU_R71_COVERAGE_salvador={"_meta":{"municipal_display_bounds":[[-13.0173,-38.6993],[-12.7336,-38.3043]],"source_id":"R81_salvador_MUNICIPAL_GEOMETRY","reference_period":"2022","scope":"Official display bounds only; census sector and AP layers not integrated"}};

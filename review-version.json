@@ -1,8 +1,8 @@
 {
   "version": "R79-R2",
-  "source_commit": "3f02424c2e894a8a8df49c5ca99baf1e7ab51270",
+  "source_commit": "8fd57e9251dd4c653f2095856c131b51fcf17674",
   "source_dirty": false,
-  "source_content_sha256": "597c4ca31181a89f8bb8b5a21122d6c7ae3776c93c93831b4b020a82ad4e09b4",
+  "source_content_sha256": "fbbee2c94d3e9540ceef210aedb0586e5cdd36d0920024da6656c4468651ae24",
   "distribution": "GitHub Pages; public review",
   "publication_repository": "andemacj/painel-acu-site",
   "base_path": "/painel-acu-site/",

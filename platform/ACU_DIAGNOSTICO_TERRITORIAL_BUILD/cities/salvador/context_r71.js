@@ -1,0 +1,1 @@
+window.ACU_R71_CONTEXT_salvador={"city":"salvador","bounds":[-38.6993,-13.0173,-38.3043,-12.7336],"layers":{},"reference":"Contexto urbano online herdado; BC250 local não integrado nesta expansão."};

@@ -1,0 +1,1 @@
+window.ACU_R71_COVERAGE_fortaleza={"_meta":{"municipal_display_bounds":[[-3.8946,-38.6379],[-3.692,-38.4014]],"source_id":"R81_fortaleza_MUNICIPAL_GEOMETRY","reference_period":"2022","scope":"Official display bounds only; census sector and AP layers not integrated"}};
