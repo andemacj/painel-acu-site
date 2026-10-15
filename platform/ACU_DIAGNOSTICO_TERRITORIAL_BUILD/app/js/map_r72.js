@@ -13,6 +13,7 @@
   return m?m.slice(1,4).map(Number):null;
  }
  function animate(group,style){
+  if(window.ACU_R82){if(group){group._r72Generation=(group._r72Generation||0)+1;group.eachLayer(l=>{const target=style(l.feature);l._r72FinalStyle={...target};l.setStyle(target);});}return;}
   if(!group)return;group._r72Generation=(group._r72Generation||0)+1;const token=group._r72Generation,changes=[],map=group._map,bounds=map?.getBounds();
   group.eachLayer(l=>{const target=style(l.feature),prior={fillColor:l.options.fillColor,fillOpacity:l.options.fillOpacity},a=rgb(prior.fillColor),b=rgb(target.fillColor);l._r72FinalStyle={...target};
    if(a&&b&&prior.fillColor!==target.fillColor&&!l.options.r71Missing&&!target.r71Missing&&target.fillOpacity>0&&prior.fillOpacity>0&&l.getBounds?.().intersects(bounds))changes.push({l,a,b,prior,target});
@@ -64,14 +65,17 @@
   function schedule(){if(!frame&&!disposed)frame=requestAnimationFrame(layout);}
   function obstacles(){
    const r=map.getContainer().getBoundingClientRect();
-   return [...map.getContainer().querySelectorAll('.leaflet-control,.r71r1-base-status,.r72-update-status:not([hidden]),.leaflet-marker-icon:not(.acu-map-label),.acu-quick-card-overlay:not([hidden])'),...document.querySelectorAll('.r71-map-tools')].filter(e=>e.getBoundingClientRect().width>0&&getComputedStyle(e).display!=='none').map(e=>{const b=e.getBoundingClientRect();return {left:b.left-r.left-4,right:b.right-r.left+4,top:b.top-r.top-4,bottom:b.bottom-r.top+4};});
+   return [...map.getContainer().querySelectorAll('.leaflet-control,.r71r1-base-status,.r72-update-status:not([hidden]),.leaflet-marker-icon:not(.acu-map-label),.acu-quick-card-overlay:not([hidden])'),...document.querySelectorAll('.r71-map-tools,#map-legend:not([hidden])')].filter(e=>e.getBoundingClientRect().width>0&&getComputedStyle(e).display!=='none').map(e=>{const b=e.getBoundingClientRect();return {left:b.left-r.left-4,right:b.right-r.left+4,top:b.top-r.top-4,bottom:b.bottom-r.top+4};});
   }
   function layout(){
    frame=0;if(disposed||!map._loaded)return;const size=map.getSize(),blocked=obstacles(),candidates=[],shown=[],allMarkers=new Set(entries.filter(e=>e.marker).map(e=>e.marker));
-   for(const e of entries){
+   const selection=map._r82Selection||{},priorityIds=selection.priorityIds||new Set(),eligible=entries.filter(e=>e.id===selection.id||priorityIds.has(e.id)||Number.isInteger(e.priority)||map.getZoom()>=13);
+   const selectedFirst=eligible.slice().sort((a,b)=>(b.id===selection.id?3:priorityIds.has(b.id)?2:Number.isInteger(b.priority)?1:0)-(a.id===selection.id?3:priorityIds.has(a.id)?2:Number.isInteger(a.priority)?1:0));
+   const maxLabels=map.getSize().x<600?6:14;
+   for(const e of selectedFirst){
     const missing=!e.available||e.value==null;
     const value=missing?ACU_R72R1.missing(e.status):format(e.value,e),name=String(e.name||''),displayName=name;
-    ctx.font='600 12px system-ui';const vw=ctx.measureText(value).width;ctx.font='500 11px system-ui';const w=Math.ceil(Math.max(vw,name?ctx.measureText(displayName).width:0))+4,h=name?30:17;
+    ctx.font='650 12px system-ui';const vw=ctx.measureText(value).width;ctx.font='600 12px system-ui';const w=Math.ceil(Math.max(vw,name?ctx.measureText(displayName).width:0))+4,h=name?30:17;
     const p=anchor(map,e,w,h);if(!p){if(e.marker)e.marker.getElement()?.style.setProperty('display','none','important');continue;}
     const world=map.project(map.containerPointToLatLng(p)),cell=Math.floor(world.x/100)+':'+Math.floor(world.y/70);
     candidates.push({e,value,name:displayName,w,h,p,cell,rank:hash(e.id),html:(name?'<span class="r72-name">'+esc(displayName)+'</span>':'')+'<b class="r72-number">'+esc(value)+'</b>'});
@@ -81,8 +85,10 @@
    const cells=new Map();for(const c of candidates){if(!cells.has(c.cell))cells.set(c.cell,[]);cells.get(c.cell).push(c);}
    const buckets=[...cells].sort((a,b)=>hash(a[0])-hash(b[0])).map(([,xs])=>xs.sort((a,b)=>a.rank-b.rank)),ordered=[];
    for(let i=0;buckets.some(b=>b.length>i);i++)for(const b of buckets)if(b[i])ordered.push(b[i]);
-   if(candidates.some(c=>Number.isInteger(c.e.priority)))ordered.sort((a,b)=>(b.e.priority??-1)-(a.e.priority??-1)||a.rank-b.rank);
+   const labelPriority=e=>e.id===selection.id?3:priorityIds.has(e.id)?2:Number.isInteger(e.priority)?1:0;
+   ordered.sort((a,b)=>labelPriority(b.e)-labelPriority(a.e)||(b.e.priority??-1)-(a.e.priority??-1));
    const accepted=[],kept=new Set();for(const c of ordered){
+    if(accepted.length>=maxLabels)break;
     const {p,w,h,e}=c,rect={left:p.x-w/2-3,right:p.x+w/2+3,top:p.y-h/2-2,bottom:p.y+h/2+2};
     if(rect.left<0||rect.right>size.x||rect.top<0||rect.bottom>size.y||blocked.some(b=>overlap(rect,b))||accepted.some(b=>overlap(rect,b))){if(e.marker)e.marker.getElement()?.style.setProperty('display','none','important');continue;}
     accepted.push(rect);kept.add(e.id);let node;
@@ -92,11 +98,12 @@
     node.dataset.unitId=e.id;node.dataset.value=String(e.value);node.dataset.indicator=e.indicator||'';node.dataset.measure=e.unit||'';node.title=(e.name?e.name+' · ':'')+c.value+(e.unit?' · '+e.unit:'');node.style.width=w+'px';
     shown.push({id:e.id,name:e.name,status:e.status,available:e.available,value:e.value,text:c.value,indicator:e.indicator,unit:e.unit,point:[p.x,p.y],rect});
    }
+   for(const e of entries)if(e.marker&&!kept.has(e.id))e.marker.getElement()?.style.setProperty('display','none','important');
    for(const [id,node] of nodes)if(!kept.has(id))node.style.display='none';
    audit={candidates:candidates.length,shown,visible:shown.length,entries:entries.length,zoom:map.getZoom(),rule:entries.some(e=>Number.isInteger(e.priority))?'interior-fit + obstacle/collision prevention; most recent selection first, independent of values/area':'interior-fit + obstacle/collision prevention; world-cell round robin and stable id hash, independent of values/area'};
   }
-  map.on('zoom moveend zoomend resize',schedule);
-  map.once('unload',()=>{disposed=true;cancelAnimationFrame(frame);map.off('zoom moveend zoomend resize',schedule);root.remove();});
+  map.on('move zoom moveend zoomend resize',schedule);
+  map.once('unload',()=>{disposed=true;cancelAnimationFrame(frame);map.off('move zoom moveend zoomend resize',schedule);root.remove();});
   return {set(next){for(const e of entries)if(e.marker&&!next.some(n=>n.marker===e.marker))e.marker.getElement()?.style.setProperty("display","none","important");entries=next;const ids=new Set(next.map(e=>e.id));for(const [id,node] of nodes)if(!ids.has(id)){node.remove();nodes.delete(id);}schedule();},schedule,audit:()=>audit,entries:()=>entries};
  }
  window.ACU_R72={format,animate,labels:mount,interiorAnchor:anchor,escape:esc};

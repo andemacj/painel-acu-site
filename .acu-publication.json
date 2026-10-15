@@ -13,6 +13,7 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/assets/maplibre/maplibre-gl.js": "1525f971223d81f169f049f1ce50083e6f1643aa6b0ea0716653a550d2d57fc2",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/assistant/deterministic_provider.js": "5d1bce9fbe1728972dd5223e02328334bf04d877b3ececed20cd63409e035a01",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/assistant/provider.js": "f038d24ab0971d04a86df62c6c4674af305874a975390ff341579a15ccfe3f3a",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/cartography_r82.css": "12d05e9538763b176867b9197305ab810842085244bb76b95580aa240598ee77",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/map_r72.css": "43fc7a76b9f8b8724c006a643c508ed29be5c5c1eaed6e9400814dad472db896",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/network_r77.css": "2d616d31f72ad01c4b417d0bc68b7bddfd91d8c21235352d6e6520f1eb3444c3",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/panorama_r71.css": "608e9412a58bac835b9fb573dfc127fe3f41a40ec3238fd837958f358590dde5",
@@ -22,7 +23,9 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/r76.css": "1b9719f7507e94405de0fcf3fa7ecf93e64224b3e1e626a5d6a5cb785eaf9cbc",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/styles.css": "b357149f49677cfbd863bd7aef99df0bb22f3039a92b6a9e0ba55ccb7ae17b0e",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/urban_r71r1.css": "1771efadcf7903e0ec6a67ce8a951d0af08cf9324f46927c9bfab648a6ef4af2",
-    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/app.js": "6f2a027248527773660f31e6c202387d5a4dbe6042dd60c06ba96cb48c2076c1",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/app.js": "45906c92f8b229e30f1ffe5d27afb5a5513e7253f011cfac36226a28076e8039",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/cartography_base_r82.js": "317b1de39cabf7990fb35a0892f75da42c0d97f9cb22b65bfbd9fd8235d6afb1",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/cartography_scale_r82.js": "16aa4843491a6750ea118d10353c978e766d63734daf36f70b6fa90f0a15ef51",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/context_r71.js": "4e2455d8567d1863844e4eefc50a313465687395f4d2b63181c9c0ac5bb11fa0",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/context_r74.js": "0dae75c98fdb9b95dcf80392ce1487bbc87fb5bb505edf335e2d2c0c303af944",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/context_r74_data.js": "3cb8a8b3eb88fa1862c0802cb5c48f41d44840de2227392ef3780c7ea723a319",
@@ -34,11 +37,11 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/expansion_r81_urban.js": "d31a158360b41e0ef5c7444030e62f3d51b97caa127f436f40f5fd7ffa0f08a9",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/households_r69_core.js": "c5198a4763f29c6c9dc1cc13c86c20c056d65ce964138cb403f1aa7cf38fa862",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/households_r70_config.js": "112cae2eb82d7f460c141d289fcbd14d60fc99b9e485d71a0f7c559c9db65164",
-    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/map_r72.js": "fff2e74af6f00d122171cc7eb48b77c4fe9e010aed3d1479a74e526bf61c82c2",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/map_r72.js": "74c44b6e52054078def16f94e5b34a2b80321ee0215a31a7e9e2689780e24d20",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/map_r72r1.js": "6e77a6aa12e284bb1ecf73c08c6fa80cdf0854db2a68765e6146e9c82b012add",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/network_r77.js": "9e964605d175597e6964991744b3ccc95aee27a9780bf85564f5e15e02dd770e",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/network_r77_data.js": "9bdd2057abc9cde113ad11fcb65276ce8a1a4f7ba54cd417f950614fd752ba0c",
-    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/panorama_r71.js": "2ea850c08e3c81745be8f59ab1184f2223bbb7ffc0832c7ed24c7dfef7270eaf",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/panorama_r71.js": "7118e53d79f7e4f64bd05a17e112b918e3a0644a0d0bd1b11d1a531328c31bb5",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/panorama_r71_colors.js": "dbbeb3201371a19aa1a696b428e54db46830a035c8285bd91c1b104ce8cbbe9e",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/policy_r75.js": "0765489771352d742f71fae2da5cb00f0945a87cd619e2c2c694029903f41b20",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/policy_r75_data.js": "c6a2e0734cca3dd10b8ab1c7a1f397d501667194816a840fd8be497d366d1d77",
@@ -164,11 +167,11 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r75/SURVEY_AGGREGATES.csv": "4ef747ac92d9e4b24474d38364fa859c3d5587d2779ecdb5e617597495110d6c",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r75/SURVEY_LINEAGE.json": "aef979ecdb5021abee823f459c565754de4913f3c3eb472a754f499c12ba7c17",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r75/SURVEY_SOURCE_REGISTRY.json": "3e52c696291dc3e9f69f1bcd92414a5b0c08b6f39880594df1a71bfce6d34d2a",
-    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/index.html": "2517fb98dd19a419b298db25786b844dd7a6cd30d42c180fca9d313408fe8c1e",
-    "review-version.json": "4337f188a96817bbb0528091d1a2df072d937bea5115da0c5df9823eb9ecdf04",
-    "version.json": "4337f188a96817bbb0528091d1a2df072d937bea5115da0c5df9823eb9ecdf04"
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/index.html": "a91ec593d5fd1c3604822f085ec7915eb89be989a02682ec39348e9df97405c1",
+    "review-version.json": "b31c98b5459844447a6a506e7d853b7305e5f77cc72bb069882fb2ae2bd405d8",
+    "version.json": "b31c98b5459844447a6a506e7d853b7305e5f77cc72bb069882fb2ae2bd405d8"
   },
   "repository": "andemacj/painel-acu-site",
   "schema": 1,
-  "source_commit": "8fd57e9251dd4c653f2095856c131b51fcf17674"
+  "source_commit": "7ac16c8ab87eda40d09b5e3fb43f0ef96030ac12"
 }

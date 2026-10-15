@@ -1,0 +1,55 @@
+/* R82: a single readable map legend, neutral context and restrained thematic labels. */
+#map-legend.r82-legend{height:auto!important;min-height:0!important;margin:0!important}
+#map{background:#f7f8fa!important}
+#map-legend.r82-legend:not([hidden]),body.r71-panorama #map-legend.r82-legend:not([hidden]){position:absolute!important;top:12px;right:12px;bottom:auto!important;width:286px!important;max-width:calc(100% - 78px)!important;max-height:calc(100% - 70px)!important;overflow:visible;display:block!important;padding:0!important;background:#fff!important;color:#203746;border:1px solid #bac8d1;border-radius:9px;box-shadow:0 2px 8px #20374616;z-index:700;font:13px/1.4 system-ui,sans-serif;isolation:isolate}
+#map-legend.r82-legend .r82-legend-shell>summary{display:block;list-style:none;cursor:pointer;padding:11px 12px 8px;min-height:44px;color:#203746;outline-offset:3px}
+#map-legend.r82-legend summary::-webkit-details-marker{display:none}
+#map-legend.r82-legend strong{display:block;font-size:14px!important;line-height:1.35;font-weight:700;padding:0;margin:0 0 4px}
+#map-legend.r82-legend .r82-meta{display:block;font-size:12px;line-height:1.4;color:#425a69}
+#map-legend.r82-legend .r82-reading{display:block;font-size:12px;line-height:1.4;color:#203746;margin-top:5px}
+#map-legend.r82-legend .r82-expand-hint{display:flex;justify-content:space-between;align-items:center;color:#334e60;font-size:12px;margin-top:5px}
+#map-legend.r82-legend .r82-legend-shell[open] .r82-expand-hint{display:none}
+#map-legend.r82-legend .r82-legend-body{padding:0 12px 10px;max-height:340px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-width:thin}
+#map-legend.r82-legend .r82-classes{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+#map-legend.r82-legend .r82-class{display:grid;grid-template-columns:23px minmax(0,1fr);gap:1px 8px;align-items:center;padding:3px;border:1px solid transparent;border-radius:4px;font-size:12.5px;line-height:1.4;overflow-wrap:anywhere}
+#map-legend.r82-legend .r82-class>i{grid-row:1/3;display:block;width:22px;height:21px;border:1px solid #687b89;border-radius:2px;box-sizing:border-box}
+#map-legend.r82-legend .r82-class>small{grid-column:2;color:#4a5f6e;font-size:11.5px!important;line-height:1.3}
+#map-legend.r82-legend .r82-class.is-selected{border-color:#25475d;background:#f0f4f7}
+#map-legend.r82-legend .r82-selected{border-top:1px solid #d8e0e5;margin:8px 0 5px;padding-top:7px;font-size:12px;line-height:1.4}
+#map-legend.r82-legend .r82-selected b{font-weight:650}
+#map-legend.r82-legend .r82-selected small{display:block;font-size:12px;color:#425a69;margin-top:3px}
+#map-legend.r82-legend .r82-keys{display:grid;gap:5px;border-top:1px solid #d8e0e5;padding-top:7px;margin-top:7px}
+#map-legend.r82-legend .r82-key{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.35}
+#map-legend.r82-legend .r82-key>i{display:block;flex:none;box-sizing:border-box;width:23px;height:13px;border:1px solid #7b8d98}
+.r82-pattern-missing{background:radial-gradient(#667d8b .8px,#f1f3f5 1px);background-size:5px 5px}
+.r82-pattern-suppressed{background:repeating-linear-gradient(45deg,transparent 0 6px,#71818c 6px 7px,transparent 7px 10px),repeating-linear-gradient(135deg,#e4e8eb 0 6px,#71818c 6px 7px,#e4e8eb 7px 10px)}
+.r82-pattern-unknown{background:repeating-linear-gradient(45deg,#edf0f3 0 4px,#7b8c99 4px 5px,#edf0f3 5px 9px)}
+.r82-pattern-notApplicable{background:#f7f8fa}
+#map-legend.r82-legend i.r82-priority-key{height:0;border:0;border-top:2px dashed #866d48}
+#map-legend.r82-legend i.r82-selection-key{height:0;border:0;border-top:3px solid #153b50;box-shadow:0 1px 0 white,0 -1px 0 white}
+#map-legend.r82-legend footer{border-top:1px solid #d8e0e5;padding-top:7px;margin-top:8px;font-size:12px}
+#map-legend.r82-legend .r82-source{display:block;font-size:12px;color:#425a69;overflow-wrap:anywhere}
+#map-legend.r82-legend .r82-method>summary{min-height:32px;padding:7px 0 1px;color:#25475d;font-size:12px;cursor:pointer}
+#map-legend.r82-legend .r82-method p{font-size:12px;line-height:1.45;margin:7px 0}
+#map-legend.r82-legend button{font-size:12px;min-height:36px;white-space:normal}
+#map-legend.r82-legend .point-icon-legend{font-size:12px!important;margin:7px 0 0;padding:0;border:0}
+#map-legend.r82-legend .point-icon-legend summary,#map-legend.r82-legend .point-icon-legend-row{font-size:12px!important;line-height:1.4}
+#map-legend.r82-legend .point-icon-legend-grid{grid-template-columns:1fr}
+.r82-class-cue{display:flex;align-items:center;gap:6px;font-size:12px;line-height:1.35;margin-top:6px;color:#334e60}
+.r82-class-cue i{width:18px;height:12px;border:1px solid #748994;flex:none}
+.r82-partial{color:#734910;font-size:12px;margin:4px 0}
+.r82-base-status{font-size:11px!important;max-width:170px!important;color:#425a69!important;background:#ffffffed!important}
+.r72-value-label,.acu-map-label .r72-label-content{font-family:system-ui,sans-serif!important;color:#203746!important;text-shadow:0 1px 2px white,1px 0 2px white,-1px 0 2px white!important;-webkit-text-stroke:0!important;paint-order:normal!important}
+.r72-value-label,.acu-map-label .r72-label-content{background:#ffffffed!important;border-radius:3px!important}
+.r72-value-label .r72-name,.acu-map-label .r72-name{font-size:12px!important;font-weight:600!important;line-height:1.25!important}
+.r72-value-label .r72-number,.acu-map-label .r72-number{font-size:12px!important;font-weight:650!important;line-height:1.25!important}
+#map .r72-value-label .r72-name,#map .acu-map-label .r72-name{font:600 12px/15px system-ui!important}
+#map .r72-value-label .r72-number,#map .acu-map-label .r72-number{font:650 12px/15px system-ui!important}
+#map :focus-visible,.r82-legend :focus-visible{outline:3px solid #173e58;outline-offset:3px}
+@media(max-width:760px){
+ #map-legend.r82-legend:not([hidden]),body.r71-panorama #map-legend.r82-legend:not([hidden]){top:auto!important;right:10px;bottom:45px!important;width:276px!important;max-width:calc(100% - 24px)!important;max-height:calc(58% - 10px)!important}
+ #map-legend.r82-legend .r82-legend-shell>summary{padding:9px 11px 7px}
+ #map-legend.r82-legend .r82-legend-body{max-height:160px;padding:0 11px 9px}
+ #map-legend.r82-legend .r82-legend-shell:not([open]) .r82-expand-hint{display:flex}
+ .r82-base-status{max-width:125px!important;font-size:10px!important}
+}
