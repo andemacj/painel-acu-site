@@ -12,8 +12,8 @@
    if(!road&&original.type!=='background'&&!['water','waterway','landcover','landuse','park','building','boundary'].includes(sl))continue;
    const layer=JSON.parse(JSON.stringify(original));layer.paint={};
    if(layer.type==='background')layer.paint={'background-color':'#f7f8fa'};
-   if(layer.type==='fill')layer.paint={'fill-color':sl==='water'?'#edf0f2':sl==='building'?'#eff1f3':'#f3f5f6','fill-opacity':1};
-   if(layer.type==='line')layer.paint={'line-color':road?'#7d8993':sl==='waterway'?'#d9e0e4':'#e1e5e8','line-width':road?['interpolate',['linear'],['zoom'],8,.25,12,.45,16,.7,20,1.1]:.6,'line-opacity':road?.22:.6};
+   if(layer.type==='fill')layer.paint={'fill-color':sl==='water'?'#dde8ee':sl==='building'?'#e2e7eb':sl==='landcover'||sl==='park'?'#e9eee9':'#f0f2f2','fill-opacity':1};
+   if(layer.type==='line')layer.paint={'line-color':road?'#8a979f':sl==='waterway'?'#aebfc9':'#b9c6ce','line-width':road?['interpolate',['linear'],['zoom'],8,.45,12,.7,16,1.0,20,1.5]:.8,'line-opacity':road?.58:.8};
    if(layer.layout){delete layer.layout['icon-image'];delete layer.layout['text-field'];}
    style.layers.push(layer);
   }
@@ -22,7 +22,7 @@
  function mountLocal(map,data){
   const group=L.layerGroup().addTo(map),layers=data?.layers||{};
   for(const [name,z] of [['r82LocalGround',210],['r82LocalWater',215],['r82LocalRoads',430]]){if(!map.getPane(name))map.createPane(name);Object.assign(map.getPane(name).style,{zIndex:z,pointerEvents:'none'});}
-  const styles={water:{pane:'r82LocalGround',color:'#e0e5e8',weight:.5,fillColor:'#edf0f2',fillOpacity:1},rivers:{pane:'r82LocalWater',color:'#d8dfe4',weight:.6,opacity:.7},roads:{pane:'r82LocalRoads',color:'#7d8993',weight:.6,opacity:.22}};
+  const styles={water:{pane:'r82LocalGround',color:'#e0e5e8',weight:.5,fillColor:'#dde8ee',fillOpacity:1},rivers:{pane:'r82LocalWater',color:'#aebfc9',weight:.8,opacity:.85},roads:{pane:'r82LocalRoads',color:'#8a979f',weight:.8,opacity:.58}};
   for(const k of ['water','rivers','roads'])if(layers[k])L.geoJSON(layers[k],{pane:styles[k].pane,renderer:L.canvas({pane:styles[k].pane}),interactive:false,style:styles[k]}).addTo(group);
   group._r71Local=true;group._r71Sources=Object.keys(layers);return group;
  }
