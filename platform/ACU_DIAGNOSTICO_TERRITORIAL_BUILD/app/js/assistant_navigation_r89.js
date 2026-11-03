@@ -2,7 +2,7 @@
 (()=>{'use strict';
  let serial=0;
  const hashParams=new URLSearchParams(location.hash.slice(1)),bootParams=hashParams.has('city')?hashParams:new URLSearchParams(location.search);
- let bootRequest=bootParams.get('module')==='assistant'&&bootParams.get('assistant_detail')?{city:bootParams.get('city'),key:bootParams.get('assistant_detail')}:null;
+ let bootRequest=bootParams.get('module')==='assistant'&&bootParams.get('assistant_detail')?{city:bootParams.get('city'),geography:bootParams.get('territory'),key:bootParams.get('assistant_detail')}:null;
  const signature=()=>JSON.stringify([...document.querySelectorAll('select[id],input[type=checkbox][id]')].map(e=>[e.id,e.type==='checkbox'?e.checked:e.value]));
  const plainState=()=>history.state&&typeof history.state==='object'?{...history.state}:{};
  function mount(api){
@@ -42,7 +42,8 @@
    });
   }
   function open(k,source=null,options={}){
-   if(!current())return false;const r=resolve(k);if(!r)return false;
+   if(source&&!options.direct)bootRequest=null;
+   if(!current())return false;const r=resolve(k);if(!r)return false;api.ensureRow?.(r);const routed=new URLSearchParams(location.hash.slice(1));routed.set('assistant_tab',api.getTab());routed.set('assistant_detail',r.indicator_id);history.replaceState(plainState(),'','#'+routed);
    const detail=document.getElementById(r.detail_id);if(!detail)return false;
    const outside=source&&!source.closest('.r85-detail-book'),owned=outside&&originValid()&&origin.pushed&&history.state?.acuR86Detail===origin.id,prior=owned?origin:null;
    const entering=!key||outside&&!owned;
@@ -91,6 +92,7 @@
    };move();requestAnimationFrame(move);
   }
   function back(){
+   bootRequest=null;
    if(!current()||pendingReturn)return;
    if(originValid()){
     if(origin.pushed&&history.state?.acuR86Detail===origin.id){pendingReturn=true;history.back();}
@@ -117,10 +119,11 @@
   const observer=new MutationObserver(()=>{if(!api.isCurrent())releaseRestoration();});observer.observe(document.body,{attributes:true,attributeFilter:['data-active-module']});
   button.setAttribute('aria-keyshortcuts','Escape');button.title='Retornar à posição de origem (Esc)';
   topButton.setAttribute('aria-controls',topTarget.id);topButton.addEventListener('click',toTop);button.addEventListener('click',back);book.addEventListener('toggle',onToggle,true);root.addEventListener('keydown',onKey);window.addEventListener('popstate',onPop);window.addEventListener('resize',fixedOffset);window.addEventListener('pagehide',releaseRestoration);
-  const boot=bootRequest;bootRequest=null;
-  const direct=new URLSearchParams(location.hash.slice(1)).get('assistant_detail')||(boot?.city===api.city?boot.key:null);
-  if(direct){const r=resolve(direct);if(r){key=r.key;const p=new URLSearchParams(location.hash.slice(1));p.set('assistant_detail',r.indicator_id);history.replaceState(cleanState(),'','#'+p);requestAnimationFrame(()=>open(key,null,{direct:true}));}else {key=null;history.replaceState(cleanState(),'',hashWithoutDetail());}}
-  return {open,back,toTop,syncHash,dispose(){disposed=true;observer.disconnect();releaseRestoration();topButton.removeEventListener('click',toTop);button.removeEventListener('click',back);book.removeEventListener('toggle',onToggle,true);root.removeEventListener('keydown',onKey);window.removeEventListener('popstate',onPop);window.removeEventListener('resize',fixedOffset);window.removeEventListener('pagehide',releaseRestoration);},snapshot:()=>({key,has_origin:!!origin,origin_valid:!!originValid(),origin:origin?{city:origin.city,geography:origin.geography,tab:origin.tab,indicator:origin.key,x:origin.x,y:origin.y,sourceId:origin.sourceId,scrolls:origin.scrolls.map(s=>({left:s.left,top:s.top})),pushed:origin.pushed}:null})};
+  const boot=bootRequest,ready=!boot?.geography||boot.geography===api.geography;
+  const direct=ready?(new URLSearchParams(location.hash.slice(1)).get('assistant_detail')||(boot?.city===api.city?boot.key:null)):null;
+  if(direct){const r=resolve(direct);if(r){key=r.key;const p=new URLSearchParams(location.hash.slice(1));p.set('assistant_detail',r.indicator_id);history.replaceState(cleanState(),'','#'+p);requestAnimationFrame(()=>open(r.key,null,{direct:true}));}else {key=null;history.replaceState(cleanState(),'',hashWithoutDetail());}}
+  return {open,back,toTop,syncHash,tabChanged(){bootRequest=null;positionEpoch++;origin=null;key=null;book.open=false;releaseRestoration();const p=new URLSearchParams(location.hash.slice(1));p.delete('assistant_detail');history.replaceState(cleanState(),'','#'+p);},dispose(){disposed=true;observer.disconnect();releaseRestoration();topButton.removeEventListener('click',toTop);button.removeEventListener('click',back);book.removeEventListener('toggle',onToggle,true);root.removeEventListener('keydown',onKey);window.removeEventListener('popstate',onPop);window.removeEventListener('resize',fixedOffset);window.removeEventListener('pagehide',releaseRestoration);},snapshot:()=>({key,has_origin:!!origin,origin_valid:!!originValid(),origin:origin?{city:origin.city,geography:origin.geography,tab:origin.tab,indicator:origin.key,x:origin.x,y:origin.y,sourceId:origin.sourceId,scrolls:origin.scrolls.map(s=>({left:s.left,top:s.top})),pushed:origin.pushed}:null})};
  }
+ document.addEventListener('change',e=>{if(e.isTrusted&&e.target.matches('#city-select,#territory-select'))bootRequest=null;});
  window.ACU_R86_DETAIL_NAV={mount};
 })();

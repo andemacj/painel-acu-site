@@ -15,7 +15,7 @@
  function sharedIndex(sources,rows){
   if(!active)return referenceIndex(sources,rows);
   active.extraSources??=new Map();active.extraIds??=new Set();sources.forEach(s=>active.extraSources.set(s.source_id,s));rows.forEach(r=>rowSources(r).forEach(id=>active.extraIds.add(id)));
-  const index=referenceIndex([...active.sources,...active.extraSources.values()],[...active.rows,{source_ids:[...active.extraIds]}]);active.index=index;
+  const index=referenceIndex([...active.sources,...active.extraSources.values()],rows);active.index=index;
   const registryNode=document.querySelector('#r83-source-registry');if(registryNode){const opened=registryNode.open;registryNode.outerHTML=registry(index);document.querySelector('#r83-source-registry').open=opened;}
   return index;
  }
@@ -30,12 +30,12 @@
  function value(v,r){if(v==null)return '<span class="r83-unavailable">N/D</span>';const u=unit(r);return N(v,r.measure==='count'?0:r.measure==='rate'||r.family==='ideb'?1:2)+(/%/.test(u)?'%':r.family==='access'?' km':'');}
  function details(r,c){
   const pairs=[['Definição',r.definition||r.title],['Universo',r.short_universe||r.universe],['Referência',String(r.period||r.year||'')],['Unidade',unit(r)],['Recorte',r.network?('Rede '+r.network+(r.location?' · '+r.location:'')):r.geography_note],['Filtros',r.filters],['Denominador',r.denominator],['Cálculo',r.formula],['Limites da leitura',r.limitations]];
-  if(r.precision)for(const [level,q] of Object.entries(r.precision)){if(!q)continue;const name=level==='municipality'?c.name:level==='state'?c.state_name||c.state:'Brasil';pairs.push(['Precisão · '+name,(q.ci_lower!=null?'IC95% '+N(q.ci_lower,2)+' a '+N(q.ci_upper,2)+'; ':'IC não publicado; ')+(q.cv_raw!==undefined?'CV oficial '+q.cv_raw:q.cv!=null?'CV '+N(q.cv,2)+'%':'')+(q.flag?' · '+q.flag:'')]);}
+  if(r.precision)for(const [level,q] of Object.entries(r.precision)){if(!q)continue;const name=level==='municipality'?c.name:level==='state'?c.state_name||c.state:level==='north'?'Região Norte':'Brasil';pairs.push(['Precisão · '+name,(q.ci_lower!=null?'IC95% '+N(q.ci_lower,2)+' a '+N(q.ci_upper,2)+'; ':'IC não publicado; ')+(q.cv_raw!==undefined?'CV oficial '+q.cv_raw:q.cv!=null?'CV '+N(q.cv,2)+'%':'')+(q.flag?' · '+q.flag:'')]);}
   if(r.disaggregation)pairs.push(['Desagregações publicadas',r.disaggregation]);
   return '<details class="r83-row-method"><summary>Definição e detalhes</summary><dl>'+pairs.filter(([,v])=>v!==undefined&&v!==null&&v!=='').map(([k,v])=>'<dt>'+E(k)+'</dt><dd>'+E(v)+'</dd>').join('')+'</dl></details>';
  }
  function table(c,rows,caption,index,levels=['municipality','state','brazil']){
-  if(!rows.length)return '';const label=k=>k==='municipality'?c.name:k==='state'?c.state_name||c.state:'Brasil';
+  if(!rows.length)return '';if(rows.every(r=>r.family==='pense')&&levels.length===3)levels=['municipality','state','north','brazil'];const label=k=>k==='municipality'?c.name:k==='state'?c.state_name||c.state:k==='north'?'Região Norte':'Brasil';
   return '<div class="r83-context-scroll" tabindex="0" aria-label="Tabela de indicadores; role para ver os comparadores"><table class="r83-context-table"><caption>'+E(caption)+refs(rows,index)+'</caption><thead><tr><th scope="col">Indicador</th>'+levels.map(k=>'<th scope="col">'+E(label(k))+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr data-context-indicator="'+E(r.indicator_id)+'" data-family="'+E(r.family)+'"><th scope="row">'+E(r.title)+'<small>'+E(r.period||r.year||'')+' · '+E(unit(r))+(r.network?' · '+E(r.network):'')+'</small>'+details(r,c)+'</th>'+levels.map(k=>'<td data-context-level="'+k+'" data-value="'+E(r.values?.[k]??'')+'">'+(r.availability?.[k]==='INCOMPATIBLE_UNIVERSE'?'<span class="r83-unavailable">Recorte distinto</span>':value(r.values?.[k],r))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
  }
  const section=(title,subtitle,body,badge='')=>'<section class="r83-section"><header class="r83-section-head"><div><h3>'+E(title)+'</h3>'+(subtitle?'<p>'+E(subtitle)+'</p>':'')+'</div>'+(badge?'<span class="r83-scope">'+E(badge)+'</span>':'')+'</header>'+body+'</section>';
