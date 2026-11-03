@@ -11,7 +11,7 @@
   const topButton=bar.querySelector('[data-r87-top]'),topTarget=root.querySelector('.r85-header');topTarget.id='r87-assistant-top';
   const current=()=>!disposed&&api.isCurrent();
   const resolve=k=>api.getRow(k)||api.rows().find(r=>r.indicator_id===k);
-  const preferred=r=>r?.key.startsWith('pnad|')?'child-context':r?.key.startsWith('territory|')?'territory':r?.key.startsWith('violence|')?'violence':['pense','abandonment','distortion','ideb'].includes(r?.family)?'education':'overview';
+  const preferred=r=>r?.key.startsWith('program|')?'program':r?.key.startsWith('pnad|')?'child-context':r?.key.startsWith('territory|')?'territory':r?.key.startsWith('violence|')?'violence':['pense','abandonment','distortion','ideb'].includes(r?.family)?'education':'overview';
   function fixedOffset(){
    const h=[...document.querySelectorAll('.topbar,.side-nav')].filter(e=>['fixed','sticky'].includes(getComputedStyle(e).position)).map(e=>e.getBoundingClientRect()).filter(r=>r.top<=80&&r.bottom>0&&r.width>innerWidth*.6);
    const top=Math.max(0,...h.map(r=>r.bottom))+8;root.style.setProperty('--r86-return-top',top+'px');return top;
