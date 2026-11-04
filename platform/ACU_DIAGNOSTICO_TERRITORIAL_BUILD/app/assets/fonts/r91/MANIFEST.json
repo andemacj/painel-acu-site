@@ -1,0 +1,26 @@
+[
+  {
+    "file": "atkinson-hyperlegible-400-latin.woff2",
+    "family": "Atkinson Hyperlegible",
+    "weight": "400",
+    "url": "https://fonts.gstatic.com/s/atkinsonhyperlegible/v12/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G04pIo.woff2",
+    "bytes": 17208,
+    "sha256": "d64ba838ef5472bba248620ec4fd8b5aa7cf0db2908e0bb230600caf279ba7bc"
+  },
+  {
+    "file": "atkinson-hyperlegible-700-latin.woff2",
+    "family": "Atkinson Hyperlegible",
+    "weight": "700",
+    "url": "https://fonts.gstatic.com/s/atkinsonhyperlegible/v12/9Bt73C1KxNDXMspQ1lPyU89-1h6ONRlW45G8Wbc9dCWP.woff2",
+    "bytes": 17524,
+    "sha256": "140e2bd25a7315c8a062508391426b0d8c3297400c947b8d847be28f73a199f0"
+  },
+  {
+    "file": "bricolage-grotesque-500-800-latin.woff2",
+    "family": "Bricolage Grotesque",
+    "weight": "500 800",
+    "url": "https://fonts.gstatic.com/s/bricolagegrotesque/v9/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInE.woff2",
+    "bytes": 76888,
+    "sha256": "a79fdb52d4a5c76552452f69202add96e287401fff03d3e8c0e38b4dcb5a99cd"
+  }
+]

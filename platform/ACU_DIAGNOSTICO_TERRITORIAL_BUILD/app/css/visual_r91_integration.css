@@ -1,0 +1,11 @@
+/* Integration accessibility corrections; approved package assets stay byte-identical. */
+html[data-acu-ui="r91"] .r85-header{background:linear-gradient(110deg,#07364e 0%,#0b526f 70%,#0c647d 100%)}
+html[data-acu-ui="r91"] body[data-active-module="panorama"] .module-head{background:linear-gradient(110deg,#07364e,#0c647d)}
+html[data-acu-ui="r91"] .city-switch select{min-height:32px}
+@media(max-width:600px){html[data-acu-ui="r91"] .city-switch select{min-height:38px}}
+@media(prefers-reduced-motion:reduce),(hover:none){html[data-acu-ui="r91"] .city-card.available:hover{transform:none}}
+@media print{
+ html[data-acu-ui="r91"] :is(.r85-synthesis-actions,.r85-shortcuts){display:none!important}
+ html[data-acu-ui="r91"] .r85-header{background:#fff!important}
+ html[data-acu-ui="r91"] .r85-header :is(h1,p,strong,small,span,a){color:#123349!important}
+}
