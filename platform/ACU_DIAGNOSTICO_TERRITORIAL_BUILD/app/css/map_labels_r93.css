@@ -1,0 +1,7 @@
+/* R93: the label layout measures these same font sizes in screen pixels. */
+#map .r72-value-label .r72-name,#map .acu-map-label .r72-name{font:600 var(--r72-font,12px)/var(--r72-line,15px) system-ui!important}
+#map .r72-value-label .r72-number,#map .acu-map-label .r72-number{font:650 var(--r72-font,12px)/var(--r72-line,15px) system-ui!important}
+#map .r72-native-label .r72-label-content{transform:translate(calc(-50% + var(--r72-shift-x,0px)),calc(-50% + var(--r72-shift-y,0px)))!important}
+.r72-label-leaders{position:absolute;top:0;left:0;overflow:hidden;pointer-events:none}
+.r72-label-leaders path{stroke:#264a60;stroke-width:1.25;fill:none}
+.r72-label-leaders circle{fill:#264a60;stroke:#fff;stroke-width:1}
