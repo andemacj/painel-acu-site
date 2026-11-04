@@ -3,7 +3,7 @@
     ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "404.html": "cd4622f72b18ef58fe1833100d3aaeca2fa9a70841a5466e575c6428bfc96ff8",
     "COBERTURA_INDICADORES_CIDADES.csv": "56ec41c04e046c6d2b6de47b48e534e769f848c5c8eb63e194c2899204164999",
-    "index.html": "9476f155952b82a7b93eba713c0911f99d290d41bd5ab44799234318b7dfdcbd",
+    "index.html": "399ab0ae764c27b75f6a26f5763ffdf5303f7ffe30f91eaa444e9641b348da0b",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/analytics/analytics_engine.js": "65d04eb32515a55585ca56d5fced62fbbc7a0d0e7cc8e080552307abda7e3de6",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/analytics/attention_engine.js": "088a1d56c6f9620e0dba974ff2ef25b71ecb54b85107767516edaecec8f961e3",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/assets/fonts/r91/Atkinson-Hyperlegible-OFL.txt": "f32d22b3908fcad2c86a74000614ec22e6a7f66ea7e867e616026a27aebdc143",
@@ -26,6 +26,7 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/map_r72.css": "43fc7a76b9f8b8724c006a643c508ed29be5c5c1eaed6e9400814dad472db896",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/network_r77.css": "2d616d31f72ad01c4b417d0bc68b7bddfd91d8c21235352d6e6520f1eb3444c3",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/panorama_r71.css": "608e9412a58bac835b9fb573dfc127fe3f41a40ec3238fd837958f358590dde5",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/panorama_r92.css": "cf3a8d2b8d6684fd967fd644253538f2be6735ae8f8e5611619cd9bdf83ee8f2",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/r73.css": "78625e6b0ca1357d345c34416d7c5e4cac479bd395f5b40c45aa9f9435e529e9",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/r74.css": "1fe5ca7e281003422f19dcc2813dd9a0632677cedef3fe3f0472838dedc1072b",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/css/r75.css": "45f2af0cb28f279f8bd9e95db0c5c4aafba6fec40748653b91bdc36cdd21fbba",
@@ -78,6 +79,7 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/network_r88.js": "3d664b857702d29479216566468777fda038bb0ecae3a3b81aeecf148ccba0a7",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/panorama_r71.js": "c4b91c6480db208997b0ebaa16666a2192b5a265550b04b04f0f57d0df56b7cb",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/panorama_r71_colors.js": "dbbeb3201371a19aa1a696b428e54db46830a035c8285bd91c1b104ce8cbbe9e",
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/panorama_r92.js": "e25bd702189af84331e25c5576a33dbb35cf04f366d89b1308198ea4a9b8fcec",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/policy_r75.js": "0765489771352d742f71fae2da5cb00f0945a87cd619e2c2c694029903f41b20",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/policy_r75_data.js": "c6a2e0734cca3dd10b8ab1c7a1f397d501667194816a840fd8be497d366d1d77",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/app/js/r79-asset-loader.js": "0f7824d0a73ec779252027a64c616df65891a7549971ad306ce102edfbb54820",
@@ -205,11 +207,11 @@
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r75/SURVEY_LINEAGE.json": "aef979ecdb5021abee823f459c565754de4913f3c3eb472a754f499c12ba7c17",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r75/SURVEY_SOURCE_REGISTRY.json": "3e52c696291dc3e9f69f1bcd92414a5b0c08b6f39880594df1a71bfce6d34d2a",
     "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/governance/r90/SURVEY_AGGREGATES_R90.csv": "779af31142f6f33f4fecf136ed5e722728201e099d559cef680888d83d7c370b",
-    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/index.html": "4d84e98f237bf7aaf0136e909e6b10f2ba0c78d4b545d4abd303ffaea85ecb48",
-    "review-version.json": "07be30892a58c4ec4525d74e4871ff0a109e3530239db900815c585e47c5727b",
-    "version.json": "07be30892a58c4ec4525d74e4871ff0a109e3530239db900815c585e47c5727b"
+    "platform/ACU_DIAGNOSTICO_TERRITORIAL_BUILD/index.html": "56ad0105d0a89bbe7180fa7b9b8eb7220737af2fe29f4bee5d273d05415924f0",
+    "review-version.json": "b2f7941093bfa05e0b3df01ccb5b7d26b210006f9392fc39c196f81e82a8cbbc",
+    "version.json": "b2f7941093bfa05e0b3df01ccb5b7d26b210006f9392fc39c196f81e82a8cbbc"
   },
   "repository": "andemacj/painel-acu-site",
   "schema": 1,
-  "source_commit": "27618a360218deb8cfdee696bba8a46bb96f3a7f"
+  "source_commit": "7cf5e22269ce26e0c893db571f65f5bedd74f6bc"
 }
