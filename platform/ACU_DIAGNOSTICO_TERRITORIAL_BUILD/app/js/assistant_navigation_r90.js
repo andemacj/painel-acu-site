@@ -73,7 +73,7 @@
    });
   }
   function fallback(){
-   if(!current())return;const r=resolve(key),target=preferred(r);origin=null;key=null;book.open=false;api.setTab(target);
+   if(!current())return;const r=resolve(key),target=r&&api.preferredTab?api.preferredTab(r):preferred(r);origin=null;key=null;book.open=false;api.setTab(target);
    history.replaceState(cleanState(),'',hashWithoutDetail());releaseRestoration();
    requestAnimationFrame(()=>{if(!current())return;const panel=document.getElementById('r85-panel-'+target),source=r?[...panel.querySelectorAll('[data-r85-detail]')].find(e=>e.dataset.r85Detail===r.key):null;
     if(source){source.closest('details.r85-group')?.setAttribute('open','');source.focus({preventScroll:true});window.scrollTo({top:Math.max(0,scrollY+source.getBoundingClientRect().top-fixedOffset()-20),behavior:'instant'});}
