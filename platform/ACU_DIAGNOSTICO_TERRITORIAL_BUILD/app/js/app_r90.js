@@ -569,8 +569,9 @@
 
   const HOUSING_THEME="R71_HOUSEHOLDS";
   const housingSelected=()=>state.theme===HOUSING_THEME;
+  const FCU_THEME="FCU_2022",FCU_INDICATOR="fcu:population_n",fcuSelected=()=>state.theme===FCU_THEME;
   function configureSelectors() {
-    const keepHousing=housingSelected();
+    const keepHousing=housingSelected(),keepFCU=fcuSelected();
     const territory = $("#territory-select");
     const groups = { AGENDA_CITY_TERRITORY_COLLECTION: "Territórios da Agenda", AGENDA_CITY_TERRITORY: "Territórios da Agenda", MUNICIPALITY: "Município", OPERATIONAL_NEIGHBORHOOD: "Bairros operacionais", IBGE_DISTRICT: "Distritos IBGE", INCID_PLANNING_UNIT: "Unidades de Planejamento — INCID", SP_DISTRICT: "Distritos administrativos", SP_SUBPREFECTURE: "Subprefeituras", RJ_ADMINISTRATIVE_REGION: "Regiões Administrativas", RJ_NEIGHBORHOOD: "Bairros oficiais", RJ_PLANNING_AREA: "Áreas de Planejamento", MANAUS_NEIGHBORHOOD: "Bairros oficiais de Manaus", CENSO2022_NEIGHBORHOOD:"Bairros oficiais · Censo 2022" };
     territory.innerHTML = Object.entries(groups).map(([level, label]) => {
@@ -594,7 +595,9 @@
       $("#theme-select").innerHTML=themes.map(theme=>`<option>${esc(theme)}</option>`).join("");
     }
     if(!R81.has(state.cityId))$("#theme-select").insertAdjacentHTML("beforeend",`<option value="${HOUSING_THEME}">Domicílios · Censo 2022</option>`);
+    $("#theme-select").insertAdjacentHTML("beforeend",`<option value="${FCU_THEME}">Favelas e comunidades urbanas</option>`);
     if(keepHousing)state.theme=HOUSING_THEME;
+    if(keepFCU)state.theme=FCU_THEME;
     $("#theme-select").value=state.theme;
     configureIndicators();
   }
@@ -719,6 +722,7 @@
   }
 
   function configureIndicators() {
+    if(fcuSelected()){state.indicatorId=FCU_INDICATOR;state.demographicMapMode="count";state.mapIndicator=null;$("#indicator-select").innerHTML=`<option value="${FCU_INDICATOR}">População residente por comunidade · 2022</option>`;return;}
     if(!ACU_R76R1.themeVisible(state.cityId,state.theme)){state.r76SelectionNotice="Tema retirado desta cidade; seleção ajustada.";state.theme=null;configureSelectors();return;}
     if(housingSelected()){
       const themes=window.ACU_R70_CONFIG.themes,keys=Object.keys(themes).filter(k=>ACU_R76R1.householdVisible(state.cityId,k)&&window.ACU_R70_CONFIG.cities[state.cityId]?.indicators[k]?.available);if(!keys.includes(String(state.indicatorId).replace('housing:',''))){if(state.indicatorId==='housing:joint')state.r76SelectionNotice='Indicador retirado desta cidade; exibindo média de moradores.';state.indicatorId='housing:residents';}
@@ -742,7 +746,7 @@
   }
 
   function updateMapIndicatorButton() {
-    if(housingSelected()){state.mapIndicator=null;return;}
+    if(housingSelected()||fcuSelected()){state.mapIndicator=null;return;}
     if (!state.data || !state.indicatorId) { state.mapIndicator = null; return; }
     const metricId=presentationMetricId();
     state.mapIndicator = mapIndicatorUsable(state.indicatorId) ? metricId : null;
@@ -1497,6 +1501,7 @@
       refreshTerritorialLabels();refreshMapMeasureControl();refreshViolenceContext();renderMapLegend();refreshPanoramaSummary();refreshMapAnalyticalArtifacts();
       if(module==='panorama'){ACU_R71_PANORAMA.commit(context,prepared);compactMapControls();}
       if(!housingSelected())refreshValueLabels();
+      window.ACU_R96_FCU?.mapMount(state);
       updateHash();committedMapSelection={map,selection:mapSelection()};map._r72LastError=null;updateStatus('');
       const audit=recordViewportAudit(action,before,false);publishQaSnapshot();return audit;
     }catch(error){
@@ -2343,7 +2348,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
 
   function renderModule() {
     state.schoolFilters.wash="";
-    const networkBridge={state,geo:currentGeo,categoryLabel:publicEquipmentCategory,equipmentSection:()=>{if(state.mapControlSection!=="equipment")setMapControlSection("equipment");},refresh:refreshPointLayers,panorama:()=>{state.module="panorama";configureSelectors();renderModule();}};R77.connect(networkBridge);window.ACU_R96_FCU?.connect(state);
+    const networkBridge={state,geo:currentGeo,categoryLabel:publicEquipmentCategory,equipmentSection:()=>{if(state.mapControlSection!=="equipment")setMapControlSection("equipment");},refresh:refreshPointLayers,panorama:()=>{state.module="panorama";configureSelectors();renderModule();}};R77.connect(networkBridge);window.ACU_R96_FCU?.connect(state,{geographyName:()=>geographyDisplayName(currentGeo()),pointLegend:pointIconLegendHtml,showTheme:()=>{state.module="panorama";state.theme=FCU_THEME;configureSelectors();renderModule();}});
     if(!ACU_R76R1.moduleVisible(state.cityId,state.module)){state.module="panorama";state.r76SelectionNotice="Tema retirado desta cidade; exibindo Panorama territorial.";configureSelectors();}
     document.body.dataset.activeModule=state.module;renderDataSituation();
     const mounted=window.ACU_R71_PANORAMA?.snapshot();
@@ -2390,6 +2395,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
   }
 
   function buildExportRows() {
+    if(fcuSelected()&&state.module==="panorama")return window.ACU_R96_FCU.mapExportRows();
     if(state.module==="assistant"&&housingSelected())return ACU_R85_ASSISTANT.aggregateExportRows();
     if(state.module==="compare")return matrixExportRows();
     if(housingSelected())return window.ACU_R71_PANORAMA?.exportRows()||[];
@@ -2399,9 +2405,10 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
   }
   function exportCsv() { const rows=buildExportRows(),header=["city","geography_id","geography","geographic_level","indicator_id","indicator","selected_measure","selected_value","count","percentage","rate","availability","unit","period","source","definition","numerator","denominator","formula","lineage_id","source_ids","source_id","sample_households","sample_cases","universe","estimate_scope","precision"],csv=[header,...rows.map(row=>header.map(key=>row[key]))].map(row=>row.map(value=>`"${String(value??"").replace(/"/g,'""')}"`).join(",")).join("\r\n"); const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}); const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`acu_${state.cityId}_${presentationMetricId()}.csv`;link.click();URL.revokeObjectURL(link.href); }
   function updateHash() { if(!state.cityId)return; const params=new URLSearchParams({city:state.cityId,territory:state.geographyId,theme:state.theme||"",module:state.module,indicator:state.indicatorId||"",measure:state.demographicMapMode});if(citywideComparisonEnabled())params.set("comparison",comparisonGeographyLevel());if(state.module==="assistant"&&window.ACU_R85_ASSISTANT)params.set("assistant_tab",ACU_R85_ASSISTANT.activeTab());if(state.module==="assistant"&&window.ACU_R85_ASSISTANT?.syncHash)ACU_R85_ASSISTANT.syncHash(params);else history.replaceState(null,"",`#${params}`); }
-  async function restoreHash() { const hashParams=new URLSearchParams(location.hash.slice(1)),queryParams=new URLSearchParams(location.search),params=hashParams.get("city")?hashParams:queryParams; const city=params.get("city"); if(!city||!window.ACU_CITIES.some(item=>item.city_id===city&&item.status==="AVAILABLE"))return; if(!await openCity(city,true))return; const territory=params.get("territory"); if(territory&&availableGeographies().some(item=>item.id===territory))state.geographyId=territory;const comparison=params.get("comparison");if(citywideComparisonEnabled()&&citywideComparisonLevels().includes(comparison))state.comparisonGeographyLevel=comparison; const theme=params.get("theme");if(theme&&(theme===HOUSING_THEME||(city==="belem"?BELEM_THEME_GROUPS.some(item=>item.id===theme):["sao_paulo","rio_de_janeiro","manaus",...EXPANSION_CITIES].includes(city)?FOUNDATION_THEME_CONTRACT.some(item=>item.id===theme&&item.id!=="Equipamentos e serviços"):state.data.catalog.some(item=>item.theme===theme))))state.theme=theme; const module=params.get("module");if(moduleMeta[module])state.module=module;if(params.get("indicator"))state.indicatorId=params.get("indicator");if(params.get("measure"))state.preferredMeasureMode=params.get("measure");configureSelectors();updateMapIndicatorButton();renderModule(); }
+  async function restoreHash() { const hashParams=new URLSearchParams(location.hash.slice(1)),queryParams=new URLSearchParams(location.search),params=hashParams.get("city")?hashParams:queryParams; const city=params.get("city"); if(!city||!window.ACU_CITIES.some(item=>item.city_id===city&&item.status==="AVAILABLE"))return; if(!await openCity(city,true))return; const territory=params.get("territory"); if(territory&&availableGeographies().some(item=>item.id===territory))state.geographyId=territory;const comparison=params.get("comparison");if(citywideComparisonEnabled()&&citywideComparisonLevels().includes(comparison))state.comparisonGeographyLevel=comparison; const theme=params.get("theme");if(theme&&(theme===FCU_THEME||theme===HOUSING_THEME||(city==="belem"?BELEM_THEME_GROUPS.some(item=>item.id===theme):["sao_paulo","rio_de_janeiro","manaus",...EXPANSION_CITIES].includes(city)?FOUNDATION_THEME_CONTRACT.some(item=>item.id===theme&&item.id!=="Equipamentos e serviços"):state.data.catalog.some(item=>item.theme===theme))))state.theme=theme; const module=params.get("module");if(moduleMeta[module])state.module=module;if(params.get("indicator"))state.indicatorId=params.get("indicator");if(params.get("measure"))state.preferredMeasureMode=params.get("measure");configureSelectors();updateMapIndicatorButton();renderModule(); }
 
   function alignThemeToModule() {
+    if(fcuSelected()&&!["panorama","assistant"].includes(state.module)){state.theme=null;configureSelectors();}
     if(state.cityId==="belem"){
       const match=BELEM_THEME_GROUPS.find(item=>item.module===state.module);
       if(match){state.theme=match.id;$("#theme-select").value=state.theme;configureIndicators();}

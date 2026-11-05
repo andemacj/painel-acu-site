@@ -3,7 +3,19 @@
  const D=window.ACU_R96_FCU_DATA,E=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const finite=x=>typeof x==='number'&&Number.isFinite(x),N=(x,d=0)=>finite(x)?x.toLocaleString('pt-BR',{maximumFractionDigits:d}):'—';
  const fold=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
- const cache=new Map(),pending=new Map();let state=null,map=null,layer=null,toolbar=null,enabled=false,request=0,loadedCity=null,directory={city:null,query:'',scope:'selection',page:0};
+ const THEME='FCU_2022',INDICATOR='fcu:population_n';
+ const BANDS=Object.freeze([
+  {upper:500,label:'Até 500',color:'#fee5d9'},
+  {upper:1000,label:'501 a 1.000',color:'#fcbba1'},
+  {upper:2000,label:'1.001 a 2.000',color:'#fc9272'},
+  {upper:5000,label:'2.001 a 5.000',color:'#fb6a4a'},
+  {upper:10000,label:'5.001 a 10.000',color:'#de2d26'},
+  {upper:null,label:'Acima de 10.000',color:'#a50f15'}
+ ]);
+ const cache=new Map(),pending=new Map();let state=null,bridge=null,map=null,layer=null,renderer=null,toolbar=null,enabled=false,request=0,loadedCity=null,loadedKey=null,shown=[],mapError=false,directory={city:null,query:'',scope:'selection',page:0};
+ const thematic=()=>state?.theme===THEME;
+ const mapKey=()=>state?.cityId+'|'+state?.geographyId;
+ const bandIndex=value=>finite(value)&&value>=0?BANDS.findIndex(b=>b.upper===null||value<=b.upper):-1;
  const get=city=>D.cities[city],fields=['municipality','state','region','brazil'];
  function rows(city){const c=get(city);return D.catalog.map(i=>({...i,key:'fcu96|'+i.id,indicator_id:'fcu96_'+i.id,metric:i.id,family:'fcu96',period:'2022',year:2022,universe:i.id==='community_n'?'Favelas e comunidades urbanas com resultados publicados':i.group==='housing'?'Domicílios particulares permanentes ocupados em FCU':i.group==='literacy'?'Pessoas de 15 anos ou mais residentes em FCU':i.id==='population_pct'?'População residente total do recorte':'Moradores de favelas e comunidades urbanas',values:Object.fromEntries(fields.map(s=>[s,c.scopes[s].metrics[i.id]])),evidence:Object.fromEntries(fields.map(s=>[s,{geography_code:c.scopes[s].code,geography_level:c.scopes[s].level,denominator:c.scopes[s].denominators[i.id]??null,lineage_id:'IBGE_CD2022_FCU:'+c.scopes[s].level+':'+c.scopes[s].code+':'+i.id}])),definition:i.definition,limitation:'Resultados do universo do Censo 2022. Cada coluna conserva o seu recorte; os dados municipais não são atribuídos ao território ACU selecionado. Não há série temporal nesta integração. A classificação FCU não determina a condição de pobreza de cada morador.',source_short:'IBGE · Censo 2022',denominator:i.unit==='%'?'Contagem oficial do mesmo recorte em 2022; valores por geografia no detalhe.':null}));}
  function evidence(r,city){const c=get(city);return '<h4>Resultado censitário · 2022</h4><div class="r85-table-scroll"><table class="r85-history"><thead><tr><th scope="col">Recorte</th><th scope="col">'+(r.unit==='%'?'Percentual':'Quantidade')+'</th><th scope="col">Denominador do percentual</th></tr></thead><tbody>'+fields.map(s=>'<tr><th scope="row">'+E(c.labels[s])+'</th><td>'+N(r.values[s],r.unit==='%'?1:0)+(r.unit==='%'&&finite(r.values[s])?'%':'')+'</td><td>'+N(r.evidence[s].denominator)+'</td></tr>').join('')+'</tbody></table></div><p>Contagens censitárias e percentuais calculados a partir de contagens compatíveis. CV e intervalo de confiança amostral não se aplicam a este produto. Ausências são preservadas; não há imputação realizada pelo painel.</p>';}
@@ -53,20 +65,108 @@
   draw();if(returnCode){content.querySelector('[data-r96-code="'+CSS.escape(returnCode)+'"]')?.focus({preventScroll:true});modal.scrollTop=directory.scroll?.modal||0;content.scrollTop=directory.scroll?.content||0;}
  }
  function csv(records,name){if(!records.length)return;const keys=[...new Set(records.flatMap(Object.keys))],quote=x=>'"'+String(x??'').replace(/"/g,'""')+'"',raw=[keys,...records.map(r=>keys.map(k=>r[k]))].map(r=>r.map(quote).join(',')).join('\r\n'),url=URL.createObjectURL(new Blob(['\ufeff'+raw],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),0);}
- function renderToolbar(){if(!toolbar?.isConnected)return;const refocus=toolbar.contains(document.activeElement);toolbar.innerHTML='<label class="r96-layer-toggle"><input type="checkbox" data-r96-layer '+(enabled?'checked':'')+'><span>Comunidades urbanas<small>IBGE · Censo 2022</small></span></label>'+(enabled?'<div class="r96-layer-key"><span><i></i>Com dados censitários</span><span><i class="r96-reference-key"></i>Referência sem estatística própria</span></div>':'')+'<p class="r96-layer-status" aria-live="polite">'+(enabled?(loadedCity===state.cityId?'Limites próprios; as cores do mapa mantêm o indicador.':'Carregando limites…'):'Ative para sobrepor os limites oficiais.')+'</p><button type="button" class="r85-quiet" data-r96-directory>Explorar comunidades →</button>';
-  toolbar.querySelector('input').onchange=e=>{enabled=e.target.checked;request++;if(!enabled){layer?.remove();layer=null;}renderToolbar();if(enabled)drawMap();};toolbar.querySelector('button').onclick=()=>openDirectory();if(refocus)toolbar.querySelector('input').focus({preventScroll:true});
+ function mapScope(city,gid){
+  const rel=relationInfo(city,gid),municipal=gid==='BELEM_CITY_CONTEXT'||state?.data?.geographies?.find(g=>g.id===gid)?.level==='MUNICIPALITY';
+  return {mode:municipal||!rel.available?'municipality':'selection',municipal,fallback:!municipal&&!rel.available,relations:new Map(rel.hits.map(x=>[x.code,x])),name:bridge?.geographyName?.()||get(city).name};
  }
- async function drawMap(){const localMap=map,city=state.cityId,token=++request;if(!enabled||!localMap)return;try{const data=await load(city);if(token!==request||!enabled||map!==localMap||state.cityId!==city||!localMap.getContainer().isConnected)return;layer?.remove();
-   const renderer=L.canvas({pane:'r96FCU',padding:.3});layer=L.geoJSON(data,{pane:'r96FCU',renderer,style:f=>({color:f.properties.coverage==='CENSUS'?'#72518b':'#66737b',weight:f.properties.coverage==='CENSUS'?1.5:1.2,dashArray:f.properties.coverage==='CENSUS'?'':'3 3',fillOpacity:.035,fillColor:'#72518b',opacity:.95}),onEachFeature:(f,l)=>{l.bindTooltip(E(f.properties.name),{sticky:true,direction:'top',className:'r96-tooltip'});l.on('click',event=>{if(event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent);profile(f);});}}).addTo(localMap);loadedCity=city;renderToolbar();
-  }catch(e){if(token!==request)return;const p=toolbar?.querySelector('.r96-layer-status');if(p)p.textContent='Falha ao carregar. Desative e ative a camada para tentar novamente.';}
+ function mapFeatures(data,city,gid){
+  const scope=mapScope(city,gid);
+  return scope.municipal||scope.fallback?data.features:data.features.filter(f=>scope.relations.has(f.properties.code));
  }
- function mapMount(s){state=s;if(map!==s.map){toolbar?.remove();request++;map=s.map;layer=null;toolbar=null;loadedCity=null;}if(!map||!map.getContainer().isConnected)return;
+ function featureStyle(feature){
+  const p=feature.properties,index=p.coverage==='CENSUS'?bandIndex(p.metrics?.population_n):-1;
+  return index<0?{color:'#677782',weight:1.3,dashArray:'4 3',fill:false,fillOpacity:0,opacity:1}:
+   {color:'#963c37',weight:1.1,dashArray:null,fill:true,fillColor:BANDS[index].color,fillOpacity:.8,opacity:.95};
+ }
+ function clearLayer(){
+  layer?.remove();renderer?.remove();layer=null;renderer=null;shown=[];loadedKey=null;
+ }
+ function renderedAudit(){
+  const classes=BANDS.map(b=>({...b,count:0}));let references=0,missing=0;const referenceStyles=new Map();
+  layer?.eachLayer(l=>{
+   if(l.feature.properties.coverage==='REFERENCE_ONLY'){references++;const style={fill:l.options.fill,dash:l.options.dashArray,color:l.options.color};referenceStyles.set(JSON.stringify(style),style);return;}
+   const actual=classes.find(b=>b.color===l.options.fillColor);
+   if(actual&&finite(l.feature.properties.metrics?.population_n))actual.count++;else missing++;
+  });
+  return {classes,references,missing,reference_styles:[...referenceStyles.values()]};
+ }
+ function renderToolbar(){
+  if(!toolbar?.isConnected||!state)return;
+  toolbar.hidden=!enabled;if(!enabled)return;
+  const city=state.cityId,c=get(city),ready=loadedKey===mapKey(),scope=mapScope(city,state.geographyId),audit=renderedAudit(),m=c.scopes.municipality.metrics;
+  let boundary=null;state.layers.program?.eachLayer(l=>{if(!boundary||l.options.weight>boundary.weight)boundary={color:l.options.color,dash:l.options.dashArray,weight:l.options.weight};});
+  const note=scope.municipal?'Município inteiro.':scope.fallback?'Cruzamento com esta seleção indisponível; exibindo o município.':'Comunidades cujo limite intersecta '+scope.name+'.';
+  toolbar.innerHTML='<section data-r97-legend aria-label="População das favelas e comunidades urbanas">'+
+   '<h3>Moradores por comunidade</h3><p class="r97-legend-unit">Pessoas · Censo 2022 · limite completo</p>'+
+   '<p class="r97-color-rule">Mais escuro = mais moradores</p><div class="r97-scale-head"><span>Moradores</span><span>Comunidades</span></div><ul class="r97-scale" aria-label="Faixas de população">'+
+   audit.classes.map(b=>'<li data-r97-band="'+E(b.upper??'open')+'"><i style="background:'+b.color+'" aria-hidden="true"></i><span>'+b.label+'</span><small>'+(ready?N(b.count):'—')+'</small></li>').join('')+
+   '</ul><p class="r97-scale-note">Faixas fixas nas oito capitais · número absoluto de moradores.</p>'+
+   '<p class="r97-reference"><i aria-hidden="true"></i>Área de referência sem estatística própria'+(ready?' · '+N(audit.references):'')+'</p>'+
+   (boundary?'<p class="r97-selection-key"><i style="border-top-color:'+E(boundary.color)+';border-top-style:'+(boundary.dash?'dashed':'solid')+'" aria-hidden="true"></i>Territórios da Agenda</p>':'')+
+   '<div class="r97-scope"><strong>'+E(scope.municipal||scope.fallback?c.name:scope.name)+'</strong><p>'+E(note)+'</p>'+
+   '<p class="r96-layer-status" role="status" aria-live="polite">'+(mapError?'Não foi possível carregar os limites.':ready?N(shown.filter(f=>f.properties.coverage==='CENSUS').length)+' comunidades com população publicada.':'Carregando limites…')+'</p>'+
+   (mapError?'<button type="button" data-r97-retry>Tentar novamente</button>':'')+
+   '<p class="r97-scope-note">Os valores são da comunidade inteira, inclusive quando seu limite atravessa a seleção.</p></div>'+
+   '<div class="r97-context"><span>Contexto da capital · '+E(c.name)+'</span><strong>'+N(m.population_n)+' moradores</strong><p>'+N(m.population_pct,1)+'% da população da capital vive em comunidades.</p>'+
+   '<details><summary>Comparar UF, região e Brasil</summary>'+fields.slice(1).map(s=>'<p><span>'+E(c.labels[s])+'</span><b>'+N(c.scopes[s].metrics.population_pct,1)+'%</b></p>').join('')+'</details></div>'+
+   '<div class="r97-actions"><button type="button" data-r96-directory>Explorar comunidades →</button><button type="button" data-r97-csv '+(!ready?'disabled':'')+'>CSV ↓</button></div>'+
+   '<p class="r96-source">IBGE · Censo 2022 · <a href="https://sidra.ibge.gov.br/tabela/9884" target="_blank" rel="noopener noreferrer">População e fonte</a></p>'+
+   (bridge?.pointLegend?.()||'')+'</section>';
+  toolbar.querySelector('[data-r96-directory]').onclick=()=>openDirectory();
+  toolbar.querySelector('[data-r97-csv]').onclick=()=>csv(mapExportRows(),'acu-comunidades-mapa-'+city+'.csv');
+  toolbar.querySelector('[data-r97-retry]')?.addEventListener('click',()=>drawMap());
+  const globalExport=document.querySelector('#export-button');if(globalExport)globalExport.disabled=!ready;
+ }
+ async function drawMap(){
+  const localMap=map,city=state.cityId,gid=state.geographyId,key=mapKey(),token=++request;
+  if(!enabled||!localMap)return;mapError=false;renderToolbar();
+  try{
+   const data=await load(city);
+   if(token!==request||!enabled||map!==localMap||state.cityId!==city||state.geographyId!==gid||!localMap.getContainer().isConnected)return;
+   clearLayer();shown=mapFeatures(data,city,gid);renderer=L.canvas({pane:'r96FCU',padding:.3});
+   layer=L.geoJSON({type:'FeatureCollection',features:shown},{
+    pane:'r96FCU',renderer,style:featureStyle,
+    onEachFeature:(f,l)=>{
+     const p=f.properties,n=p.metrics?.population_n;
+     l.bindTooltip('<strong>'+E(p.name)+'</strong><br>'+(p.coverage==='CENSUS'&&finite(n)?N(n)+' moradores · 2022':'Área de referência · sem estatística própria')+'<br><small>Limite completo da comunidade · clique para abrir o perfil</small>',{sticky:true,direction:'top',className:'r96-tooltip',opacity:1});
+     l.on('click',event=>{if(event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent);profile(f);});
+     l.on('mouseover',()=>l.setStyle({weight:2.2,color:p.coverage==='CENSUS'?'#6f1b1e':'#43545f'}));
+     l.on('mouseout',()=>l.setStyle(featureStyle(f)));
+    }
+   }).addTo(localMap);
+   loadedCity=city;loadedKey=key;renderToolbar();
+  }catch(e){
+   if(token!==request)return;mapError=true;loadedKey=null;renderToolbar();
+  }
+ }
+ function mapMount(s){
+  state=s;enabled=thematic()&&s.module==='panorama';
+  if(map!==s.map){toolbar?.remove();request++;map=s.map;layer=null;renderer=null;toolbar=null;shown=[];loadedCity=null;loadedKey=null;}
+  if(!map||!map.getContainer().isConnected)return;
+  map.getContainer().toggleAttribute('data-r97-fcu-map',enabled);
+  if(!enabled){request++;clearLayer();toolbar?.remove();toolbar=null;return;}
   if(!map.getPane('r96FCU')){map.createPane('r96FCU');map.getPane('r96FCU').style.zIndex=455;}
-  if(!toolbar?.isConnected){toolbar=document.createElement('section');toolbar.className='r96-map-control';toolbar.setAttribute('aria-label','Favelas e comunidades urbanas');const rail=document.querySelector('.r92-map-rail');if(rail)rail.prepend(toolbar);else{const control=L.control({position:'bottomleft'});control.onAdd=()=>toolbar;control.addTo(map);L.DomEvent.disableClickPropagation(toolbar);L.DomEvent.disableScrollPropagation(toolbar);}renderToolbar();}
-  if(enabled&&!layer)drawMap();
+  if(!toolbar?.isConnected){
+   toolbar=document.createElement('section');toolbar.className='r96-map-control r97-map-control';toolbar.setAttribute('aria-label','Favelas e comunidades urbanas');
+   const rail=document.querySelector('.r92-map-rail');
+   if(rail)rail.prepend(toolbar);
+   else{const control=L.control({position:'bottomleft'});control.onAdd=()=>toolbar;control.addTo(map);L.DomEvent.disableClickPropagation(toolbar);L.DomEvent.disableScrollPropagation(toolbar);}
+  }
+  renderToolbar();if(loadedKey!==mapKey()){request++;clearLayer();drawMap();}
  }
- function connect(s){state=s;}
- function showMap(){if(!state)return;enabled=true;document.querySelector('.side-nav button[data-module=panorama]')?.click();}
+ function mapExportRows(){
+  if(!enabled||loadedKey!==mapKey())return [];
+  const city=state.cityId,scope=mapScope(city,state.geographyId);
+  return shown.map(f=>{const p=f.properties,n=p.metrics?.population_n;
+   return {city:get(city).name,geography_id:p.code,geography:p.name,geographic_level:'IBGE_FCU_COMPLETE',indicator_id:INDICATOR,indicator:'População residente da comunidade',selected_measure:'census_count',selected_value:finite(n)?n:null,count:finite(n)?n:null,percentage:null,unit:'pessoas',period:'2022',availability:p.coverage==='REFERENCE_ONLY'?'REFERENCE_ONLY':finite(n)?'AVAILABLE':'SOURCE_NOT_AVAILABLE',source:'IBGE · Censo 2022 · https://sidra.ibge.gov.br/tabela/9884',source_id:'r96-population',source_ids:'r96-population',definition:'População residente no limite completo da favela ou comunidade urbana identificada pelo IBGE.',universe:'Moradores da comunidade inteira',estimate_scope:'Comunidade inteira; sem rateio por área de interseção',lineage_id:'IBGE_CD2022_FCU:community:'+p.code+':population_n',spatial_relation:scope.relations.get(p.code)?.relation||'MUNICIPAL_CONTEXT',official_url:'https://sidra.ibge.gov.br/tabela/9884'};
+  });
+ }
+ function connect(s,b){
+  state=s;if(b)bridge=b;enabled=thematic()&&s.module==='panorama';
+  document.body.classList.toggle('r97-fcu-theme',enabled);
+  const globalExport=document.querySelector('#export-button');if(globalExport)globalExport.disabled=enabled&&loadedKey!==mapKey();
+ }
+ function showMap(){bridge?.showTheme?.();}
  document.addEventListener('click',e=>{if(e.target.closest('.r96-fcu-section [data-r96-directory]'))openDirectory();if(e.target.closest('[data-r96-show-map]'))showMap();});
- window.ACU_R96_FCU={rows,section,evidence,exportRows,augment,connect,mapMount,openDirectory,sources:D.sources,snapshot:()=>({city:state?.cityId,enabled,loadedCity,features:layer?.getLayers().length||0,viewport:map?._loaded?{center:[map.getCenter().lat,map.getCenter().lng],zoom:map.getZoom()}:null,cachedCities:[...cache.keys()]})};
+ window.ACU_R96_FCU={rows,section,evidence,exportRows,augment,connect,mapMount,openDirectory,mapExportRows,themeId:THEME,mapIndicatorId:INDICATOR,sources:D.sources,snapshot:()=>({city:state?.cityId,enabled,loadedCity,ready:loadedKey===mapKey(),features:layer?.getLayers().length||0,scope:enabled?mapScope(state.cityId,state.geographyId).mode:null,...renderedAudit(),viewport:map?._loaded?{center:[map.getCenter().lat,map.getCenter().lng],zoom:map.getZoom()}:null,cachedCities:[...cache.keys()]})};
 })();
