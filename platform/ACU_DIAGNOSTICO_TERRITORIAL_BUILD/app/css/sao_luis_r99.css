@@ -1,0 +1,26 @@
+.r99-sl-coverage { background:#fff; border:1px solid #dce7ed; border-radius:12px; padding:11px 13px; font-size:11px; line-height:1.6; color:#315366; }
+.r99-sl-coverage summary { cursor:pointer; }
+.r99-sl-coverage summary strong { font-size:12px; }
+.r99-sl-coverage summary span { display:block; color:#607281; font-size:10px; }
+.r99-sl-coverage p { margin:8px 0; }
+.r99-sl-actions { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+.r99-sl-actions button { background:#edf6f9; color:#17546d; border:0; border-radius:7px; padding:7px 9px; min-height:34px; cursor:pointer; font-family:inherit; font-size:11px; font-weight:600; }
+.r99-municipal { color:#315366; }
+.r99-kicker { text-transform:uppercase; letter-spacing:.07em; font-size:11px; font-weight:700; color:#007ea6; }
+.r99-municipal>details { border:1px solid #dce7ed; border-radius:10px; margin:9px 0; overflow:hidden; }
+.r99-municipal>details>summary { padding:12px; cursor:pointer; font-weight:700; }
+.r99-municipal summary small { float:right; font-weight:400; margin-left:10px; }
+.r99-search { display:block; font-weight:600; margin-top:15px; }
+.r99-search input { display:block; width:100%; padding:10px 12px; margin-top:5px; border:1px solid #bed0dc; border-radius:8px; font:inherit; }
+.r99-table-wrap { overflow-x:auto; }
+.r99-municipal table { width:100%; border-collapse:collapse; font-size:12px; }
+.r99-municipal th,.r99-municipal td { padding:10px 12px; border-top:1px solid #e1eaf0; text-align:left; vertical-align:top; }
+.r99-municipal th { width:35%; }
+.r99-municipal td:nth-child(2) { white-space:nowrap; font-variant-numeric:tabular-nums; }
+.r99-municipal th small,.r99-municipal td a { display:block; font-size:11px; margin-top:3px; }
+.r99-municipal td>details { margin-top:6px; font-size:10px; overflow-wrap:anywhere; }
+.r99-municipal td>details summary { cursor:pointer; }
+.r99-note { font-size:11px; }
+.r99-municipal [hidden] { display:none !important; }
+.r99-sl-coverage :focus-visible,.r99-municipal :focus-visible { outline:2px solid #007fa5; outline-offset:3px; }
+@media(max-width:720px){.r99-sl-actions button { min-height:40px; }.r99-municipal table { font-size:11px; }.r99-municipal th,.r99-municipal td { padding:8px; }}

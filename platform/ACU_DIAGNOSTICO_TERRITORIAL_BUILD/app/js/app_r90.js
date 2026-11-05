@@ -534,7 +534,7 @@
     try {
       const [originalData,availabilityMatrix,reconciledPercentages,localContext,coverage,schoolProfiles,displayClips] = await Promise.all([loadCityScript(cityId),loadAvailabilityMatrix(cityId),loadReconciledPercentages(cityId),loadScriptOnce(`cities/${cityId}/context_r71.js`,"ACU_R71_CONTEXT_"+cityId),loadScriptOnce(`cities/${cityId}/coverage_r71.js`,"ACU_R71_COVERAGE_"+cityId),cityId==="belem"?loadScriptOnce("cities/belem/school_profiles.js", "ACU_D1R_BELEM_SCHOOL_PROFILES"):null,loadScriptOnce(`cities/${cityId}/display_clip_r73.js`,"ACU_R73_CLIPS_"+cityId)]);
       if(request!==cityRequest)return false;
-      const data=ACU_R87_LOCATIONS.apply(cityId,originalData);
+      const data=ACU_R99_SL.apply(cityId,ACU_R87_LOCATIONS.apply(cityId,originalData));
       state.localContext=localContext;state.housingCoverage=coverage;
       state.reconciledPercentages=reconciledPercentages;
       if($("#detail-dialog").open)$("#detail-dialog").close();$("#detail-content").innerHTML="";
@@ -590,7 +590,7 @@
       state.theme=themes.some(theme=>theme.id===state.theme)?state.theme:themes[0]?.id;
       $("#theme-select").innerHTML=themes.map(theme=>`<option value="${esc(theme.id)}">${esc(theme.label)}</option>`).join("");
     }else{
-      const themes=[...new Set(state.data.catalog.filter(indicatorGovernedForPublication).filter(metricVisibleInContext).map(item=>item.theme))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+      const themes=[...new Set(state.data.catalog.filter(indicatorGovernedForPublication).filter(metricVisibleInContext).map(item=>item.theme))].sort((a,b)=>state.cityId==='sao_luis'?(a==='Demografia'?-1:b==='Demografia'?1:a.localeCompare(b,'pt-BR')):a.localeCompare(b,"pt-BR"));
       state.theme=themes.includes(state.theme)?state.theme:themes[0];
       $("#theme-select").innerHTML=themes.map(theme=>`<option>${esc(theme)}</option>`).join("");
     }
@@ -704,6 +704,7 @@
   }
   function metricVisibleInContext(metric) {
     if(!indicatorGovernedForPublication(metric)||governedIndicatorRecord(metric.indicator_id)?.publication_mode==="MUNICIPAL_CONTEXT_ONLY")return false;
+    if(state.cityId==='sao_luis')return saoLuisMapCoverage(metric).available>0;
     const group=presentationGroupForIndicator(metric.indicator_id);
     if(["sao_paulo","rio_de_janeiro","manaus",...EXPANSION_CITIES].includes(state.cityId)){
       const record=governedIndicatorRecord(metric.indicator_id);
@@ -712,6 +713,10 @@
     if(state.cityId!=="belem")return group?availableMeasuresForGroup(group).length>0:metricHasContextData(metric);
     if(group)return contextVisibilityForGroup(group)===true&&availableMeasuresForGroup(group).length>0;
     return contextGeographies().some(geography=>A.isAvailable(metricCell(geography.id,metric.indicator_id)));
+  }
+  function saoLuisMapCoverage(metric) {
+    const ids=activeMapGeographyIds(),level=state.data?.geographies.find(g=>g.id===ids[0])?.level;
+    return {available:ids.filter(id=>A.isAvailable(metricCell(id,metric?.indicator_id))).length,total:ids.length,label:level==='INCID_PLANNING_UNIT'?'UPs':'territórios'};
   }
   function applyMeasureContract(group, preferDefault=false) {
     if(!group){state.demographicMapMode="count";return;}
@@ -729,7 +734,8 @@
       const labels={residents:'Moradores — média por domicílio',water:'Água — sem canalização interna',sewage:'Esgoto — sem rede ou fossa séptica/filtro',bathroom:'Banheiro — sem banheiro nem sanitário',waste:'Resíduos — sem coleta direta ou por caçamba',joint:'0–17 anos — sem água interna e sem rede/fossa séptica'};
       $("#indicator-select").innerHTML=keys.map(k=>`<option value="housing:${k}">${esc(labels[k])}</option>`).join('');$("#indicator-select").value=state.indicatorId;state.mapIndicator=null;return;
     }
-    const metrics = publicationMetricsForTheme(state.theme).filter(indicatorGovernedForPublication).filter(metricVisibleInContext);
+    let metrics = publicationMetricsForTheme(state.theme).filter(indicatorGovernedForPublication).filter(metricVisibleInContext);
+    if(state.cityId==='sao_luis')metrics=ACU_R99_SL.sortMetrics(metrics,saoLuisMapCoverage);
     const normalizedGroup=presentationGroupForIndicator(state.indicatorId);if(normalizedGroup)state.indicatorId=normalizedGroup.count_indicator_id;
     const selectionChanged=!metrics.some(item => item.indicator_id === state.indicatorId);
     if(selectionChanged)state.indicatorId=(metrics[0]||{}).indicator_id||null;
@@ -740,7 +746,7 @@
     if(grouped){
       const bySubtheme=new Map();metrics.forEach(item=>{const key=item.presentation_subtheme||"INDICADORES";if(!bySubtheme.has(key))bySubtheme.set(key,[]);bySubtheme.get(key).push(item);});
       $("#indicator-select").innerHTML=[...bySubtheme].map(([subtheme,items])=>`<optgroup label="${esc(subtheme)}">${items.map(item=>`<option value="${esc(item.indicator_id)}">${esc(item.label)}</option>`).join("")}</optgroup>`).join("");
-    }else $("#indicator-select").innerHTML = metrics.map(item => `<option value="${esc(item.indicator_id)}">${esc(item.label)}</option>`).join("");
+    }else $("#indicator-select").innerHTML = metrics.map(item => `<option value="${esc(item.indicator_id)}">${esc(state.cityId==='sao_luis'?ACU_R99_SL.optionLabel(item,saoLuisMapCoverage(item)):item.label)}</option>`).join("");
     $("#indicator-select").value = state.indicatorId;
     updateMapIndicatorButton();
   }
@@ -1434,7 +1440,7 @@
     state.stableMapViewport=after;state.layoutResizeInProgress=false;
     publishQaSnapshot();return state.lastLayoutInvalidateAudit;
   }
-  function panoramaContext() { return {map:state.map,cityId:state.cityId,module:state.module,theme:state.theme,indicator:state.indicatorId,metric:metricById(presentationMetricId()),audit:state.mapIndicator?thematicMapEngine.audit(state.mapIndicator):null,openMethod:()=>openIndicatorMethodology(state.indicatorId),geography:currentGeo(),program:state.data.map.program,selectedTerritory:{type:"FeatureCollection",features:[...(activeMapCollection()?.features||[]).filter(f=>featureId(f)===state.geographyId),...(state.data.map.program?.features||[]).filter(f=>featureId(f)===state.geographyId||currentGeo().level==="AGENDA_CITY_TERRITORY_COLLECTION")]},municipality:state.data.map.municipality,references:{type:"FeatureCollection",features:[...(activeMapCollection()?.features||[]),...(state.data.map.program?.features||[]).map(f=>({...f,properties:{...f.properties,territory_role:"PROGRAM_TERRITORY",territory_id:R81.has(state.cityId)?f.properties.territory_id:"DAICO_ACU_OPERATIONAL_2022"}}))]},refreshBase:()=>{state.layers.territories?.setStyle(mapStyle);},resizeMap:()=>invalidateMapForLayout("panorama_sheet_resize"),selectGeography,getGeography:currentGeo,withNavigation:fn=>withAllowedMapNavigation("housing_explicit_navigation",fn),refreshLabels:refreshValueLabels}; }
+  function panoramaContext() { return {map:state.map,cityId:state.cityId,module:state.module,theme:state.theme,indicator:state.indicatorId,metric:metricById(presentationMetricId()),audit:state.mapIndicator?thematicMapEngine.audit(state.mapIndicator):null,openMethod:()=>openIndicatorMethodology(state.indicatorId),geography:currentGeo(),program:state.data.map.program,selectedTerritory:{type:"FeatureCollection",features:[...(activeMapCollection()?.features||[]).filter(f=>featureId(f)===state.geographyId),...(state.data.map.program?.features||[]).filter(f=>featureId(f)===state.geographyId||currentGeo().level==="AGENDA_CITY_TERRITORY_COLLECTION")]},municipality:state.data.map.municipality,references:{type:"FeatureCollection",features:[...(activeMapCollection()?.features||[]),...(state.data.map.program?.features||[]).map(f=>({...f,properties:{...f.properties,territory_role:"PROGRAM_TERRITORY",territory_id:R81.has(state.cityId)?f.properties.territory_id:"DAICO_ACU_OPERATIONAL_2022"}}))]},refreshBase:()=>{state.layers.territories?.setStyle(mapStyle);window.ACU_R98_FCU?.mapMount(state);},resizeMap:()=>invalidateMapForLayout("panorama_sheet_resize"),selectGeography,getGeography:currentGeo,withNavigation:fn=>withAllowedMapNavigation("housing_explicit_navigation",fn),refreshLabels:refreshValueLabels}; }
   function installMapResizeObserver() {
     if(state.mapResizeObserver){state.mapResizeObserver.disconnect();state.mapResizeObserver=null;}
     if(!mapIsMounted()||typeof ResizeObserver!=="function")return;
@@ -1501,7 +1507,7 @@
       refreshTerritorialLabels();refreshMapMeasureControl();refreshViolenceContext();renderMapLegend();refreshPanoramaSummary();refreshMapAnalyticalArtifacts();
       if(module==='panorama'){ACU_R71_PANORAMA.commit(context,prepared);compactMapControls();}
       if(!housingSelected())refreshValueLabels();
-      window.ACU_R96_FCU?.mapMount(state);window.ACU_R98_FCU?.mapMount(state);
+      window.ACU_R96_FCU?.mapMount(state);window.ACU_R98_FCU?.mapMount(state);window.ACU_R99_SL?.mount(state);
       updateHash();committedMapSelection={map,selection:mapSelection()};map._r72LastError=null;updateStatus('');
       const audit=recordViewportAudit(action,before,false);publishQaSnapshot();return audit;
     }catch(error){
@@ -1523,7 +1529,11 @@
     state.map.r72Labels=ACU_R72.labels(state.map);
     state.layers.basemap=window.R71R1UrbanContext.mount(state.map,state.localContext);
     state.map.createPane("r71Contours");state.map.getPane("r71Contours").style.zIndex=470;
-    if(state.cityId!=="belem"&&state.data.map.municipality) state.layers.municipality=L.geoJSON(state.data.map.municipality,{pane:"r71Contours",style:{color:"#758693",weight:1,fill:false,dashArray:"5 5"},interactive:false}).addTo(state.map);
+    // SVG lets unpainted/noninteractive contour areas pass pointer events to
+    // the thematic canvas below. A canvas in this higher pane covers the whole
+    // map even when its only feature is a noninteractive, unfilled outline.
+    state.map._r99ContourRenderer=L.svg({pane:"r71Contours",padding:.2});
+    if(state.cityId!=="belem"&&state.data.map.municipality) state.layers.municipality=L.geoJSON(state.data.map.municipality,{pane:"r71Contours",renderer:state.map._r99ContourRenderer,style:{color:"#758693",weight:1,fill:false,dashArray:"5 5"},interactive:false}).addTo(state.map);
     addTerritorialLayer(); state.map._r72GeometrySignature=thematicSignature(); addProgramLayer(); renderMapLegend(); bindMapControls(); refreshPointLayers();
     state.map.on("zoomend",()=>{updateMarkerIcons();scheduleMapLabelCollisionAudit();positionActiveQuickCard();if(!state.layoutResizeInProgress)state.stableMapViewport=mapViewportSnapshot();publishQaSnapshot();});state.map.on("moveend",()=>{scheduleMapLabelCollisionAudit();positionActiveQuickCard();if(!state.layoutResizeInProgress)state.stableMapViewport=mapViewportSnapshot();publishQaSnapshot();});
     const protectedViewport=state.stableMapViewport,explicitNavigation=Boolean(state.mapNavigationIntent);if(protectedViewport&&!explicitNavigation)withAllowedMapNavigation("restore_preserved_viewport",()=>state.map.setView(protectedViewport.center,protectedViewport.zoom,{animate:false,reset:true}));else withAllowedMapNavigation(state.mapNavigationIntent||"initial_map_fit",fitActiveGeography);state.mapNavigationIntent=null;state.stableMapViewport=mapViewportSnapshot();scheduleMapLabelCollisionAudit();refreshMapAnalyticalArtifacts();requestAnimationFrame(restorePinnedTerritorialQuickCard);publishQaSnapshot();
@@ -1549,9 +1559,16 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
     state.layers.labels=L.layerGroup(labels).addTo(state.map);
   }
   function addProgramLayer() {
-    const programInteractive=["sao_luis","sao_paulo","rio_de_janeiro","manaus",...EXPANSION_CITIES].includes(state.cityId),labels=[];state.layers.program=L.geoJSON(state.data.map.program,{pane:"r71Contours",style:feature=>{const id=(feature.properties||{}).territory_id,selected=id===state.geographyId,compared=state.module==="compare"&&state.compareIds.includes(id);return {color:selected||compared?"#153b50":"#866d48",weight:selected||compared?3:2,fill:false,dashArray:selected||compared?null:"7 4"};},interactive:programInteractive,onEachFeature:(feature,layer)=>{
+    const programInteractive=["sao_luis","sao_paulo","rio_de_janeiro","manaus",...EXPANSION_CITIES].includes(state.cityId),labels=[];state.layers.program=L.geoJSON(state.data.map.program,{pane:"r71Contours",renderer:state.map._r99ContourRenderer,style:feature=>{const id=(feature.properties||{}).territory_id,selected=id===state.geographyId,compared=state.module==="compare"&&state.compareIds.includes(id);return {color:selected||compared?"#153b50":"#866d48",weight:selected||compared?3:2,fill:false,dashArray:selected||compared?null:"7 4"};},interactive:programInteractive,onEachFeature:(feature,layer)=>{
       const p=feature.properties||{},id=p.territory_id;if(state.cityId!=="belem"&&!citywideComparisonEnabled())layer.bindTooltip(`<div class="acu-tooltip"><strong>${esc(featureDisplayName(feature))}</strong><span>Território de atuação da Agenda Cidade UNICEF</span><small>${esc(p.sector_count||"")} setores; contrato próprio, distinto da UP homônima.</small></div>`,{sticky:true,className:"acu-territory-tooltip",opacity:1});
-      layer.on("add",()=>{if(layer._path){layer._path.classList.add("acu-program-outline");layer._path.dataset.programTerritoryId=id;layer._path.dataset.physicalGeographyId=physicalGeographyId(feature);layer._path.dataset.territoryRole="PROGRAM_TERRITORY";layer._path.setAttribute("role","button");layer._path.setAttribute("tabindex","0");layer._path.setAttribute("aria-label",`Selecionar ${mapTerritoryName(feature)}`);if(citywideComparisonEnabled()){L.DomEvent.on(layer._path,"focus",event=>showTerritorialQuickCard(layer,feature,event,false));L.DomEvent.on(layer._path,"blur",()=>hideQuickCard("territory"));L.DomEvent.on(layer._path,"keydown",event=>{if(event.key==="Enter"||event.key===" "){L.DomEvent.preventDefault(event);selectGeographyFromMap(id);}});}}});
+      layer.on("add",()=>{
+        if(!layer._path)return;
+        layer._path.classList.add("acu-program-outline");layer._path.dataset.programTerritoryId=id;layer._path.dataset.physicalGeographyId=physicalGeographyId(feature);layer._path.dataset.territoryRole="PROGRAM_TERRITORY";
+        if(!programInteractive)return;
+        layer._path.setAttribute("role","button");layer._path.setAttribute("tabindex","0");layer._path.setAttribute("aria-label",`Selecionar ${mapTerritoryName(feature)}`);
+        if(citywideComparisonEnabled()){L.DomEvent.on(layer._path,"focus",event=>showTerritorialQuickCard(layer,feature,event,false));L.DomEvent.on(layer._path,"blur",()=>hideQuickCard("territory"));}
+        L.DomEvent.on(layer._path,"keydown",event=>{if(event.key==="Enter"||event.key===" "){L.DomEvent.preventDefault(event);citywideComparisonEnabled()?selectGeographyFromMap(id):selectGeography(state.geographyId===id?defaultGeography():id);}});
+      });
       if(programInteractive)layer.on({mouseover:event=>showTerritorialQuickCard(layer,feature,event,false),mouseout:()=>hideQuickCard("territory"),focus:event=>showTerritorialQuickCard(layer,feature,event,false),blur:()=>hideQuickCard("territory"),click:event=>{if(citywideComparisonEnabled()&&event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent);citywideComparisonEnabled()?selectGeographyFromMap(id):selectGeography(state.geographyId===id?defaultGeography():id);}});
 }}).addTo(state.map);if(programInteractive)state.layers.program.eachLayer(layer=>{const p=layer.feature.properties||{};if(!layer.getBounds||!layer.getBounds().isValid()||!shouldRenderPhysicalLabel(layer.feature))return;const selected=p.territory_id===state.geographyId,classes=["acu-map-label","acu-program-territory-label","acu-critical-map-label",selected?"acu-selected-map-label":""].filter(Boolean).join(" ");const label=L.marker(representativeLayerPoint(layer),{interactive:true,keyboard:true,title:`Selecionar ${mapTerritoryName(layer.feature)}`,icon:L.divIcon({className:classes,html:programMapLabel(layer.feature),iconSize:null})});label._acuFeature=layer.feature;label._acuPhysicalGeographyId=physicalGeographyId(layer.feature);const activate=event=>{if(citywideComparisonEnabled()&&event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent);citywideComparisonEnabled()?selectGeographyFromMap(p.territory_id):selectGeography(state.geographyId===p.territory_id?defaultGeography():p.territory_id);};label.on("click",activate);if(state.cityId==="manaus")label.on({mouseover:event=>showTerritorialQuickCard(layer,layer.feature,event,false),mouseout:()=>hideQuickCard("territory")});label.on("add",()=>{const element=label.getElement();if(!element)return;L.DomEvent.on(element,"focus",event=>showTerritorialQuickCard(layer,layer.feature,event,false));L.DomEvent.on(element,"blur",()=>hideQuickCard("territory"));L.DomEvent.on(element,"keydown",event=>{if(event.key==="Enter"||event.key===" "){L.DomEvent.preventDefault(event);activate({originalEvent:event});}});});labels.push(label);});state.layers.programLabels=L.layerGroup(labels).addTo(state.map);
   }
@@ -1878,7 +1895,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
     if(state.layerState.pct){const rows=state.cityId==="belem"?((state.data.pct&&state.data.pct.generalizedAfricanMatrixPoints)||[]).filter(matchesTerritory):[];const markers=rows.map(item=>L.marker([Number(item.latitude),Number(item.longitude)],{icon:pctMarkerIcon(),riseOnHover:true}).bindTooltip(`<div class="acu-pct-tooltip"><strong>${esc(item.label)}</strong><span>${esc(item.neighborhood||"N/D")}</span><small>${esc(item.source||"")} · Localização generalizada para proteção</small></div>`,{direction:"top",className:"acu-pct-popup"}));state.markerLayers.pct=L.layerGroup(markers).addTo(state.map);messages.push(state.cityId==="belem"?`${rows.length} localização(ões) PCT generalizada(s).`:"PCT: dados não publicamente disponíveis; nenhum ponto exibido.");}
     if(window.ACU_R71_PANORAMA?.isActive())window.ACU_R71_PANORAMA.refreshLegend();else renderMapLegend();
     R77.mapLayer(state);
-    window.ACU_R96_FCU?.mapMount(state);window.ACU_R98_FCU?.mapMount(state);
+    window.ACU_R96_FCU?.mapMount(state);window.ACU_R98_FCU?.mapMount(state);window.ACU_R99_SL?.mount(state);
     state.map.r72Labels?.schedule();
     setMapStatus(R77.mapStatus()||messages.join(" ")||"Camadas territoriais prontas.",messages.some(item=>/pendente|não publicamente/.test(item))?"warning":"");
   }
@@ -2349,7 +2366,8 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
   function renderModule() {
     state.schoolFilters.wash="";
     const networkBridge={state,geo:currentGeo,categoryLabel:publicEquipmentCategory,equipmentSection:()=>{if(state.mapControlSection!=="equipment")setMapControlSection("equipment");},refresh:refreshPointLayers,panorama:()=>{state.module="panorama";configureSelectors();renderModule();}};R77.connect(networkBridge);window.ACU_R96_FCU?.connect(state,{geographyName:()=>geographyDisplayName(currentGeo()),pointLegend:pointIconLegendHtml,showTheme:()=>{state.module="panorama";state.theme=FCU_THEME;configureSelectors();renderModule();}});
-    window.ACU_R98_FCU?.connect(state,{geographyName:()=>geographyDisplayName(currentGeo()),changed:()=>{updateHash();publishQaSnapshot();}});
+    window.ACU_R98_FCU?.connect(state,{geographyName:()=>geographyDisplayName(currentGeo()),canHover:()=>!state.quickCard?.persistent,hideHover:()=>{if(state.quickCard&&!state.quickCard.persistent)hideQuickCard(state.quickCard.kind);},changed:()=>refreshMapPresentation('fcu_overlay_change')});
+    window.ACU_R99_SL?.connect(state,{cell:metricCell,metric:()=>metricById(state.mapIndicator||state.indicatorId),mapCoverage:saoLuisMapCoverage,sectors:()=>{state.theme=HOUSING_THEME;state.indicatorId='housing:residents';configureSelectors();refreshMapPresentation('household_sector_choice');}});
     if(!ACU_R76R1.moduleVisible(state.cityId,state.module)){state.module="panorama";state.r76SelectionNotice="Tema retirado desta cidade; exibindo Panorama territorial.";configureSelectors();}
     document.body.dataset.activeModule=state.module;renderDataSituation();
     const mounted=window.ACU_R71_PANORAMA?.snapshot();

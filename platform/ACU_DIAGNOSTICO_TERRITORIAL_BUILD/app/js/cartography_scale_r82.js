@@ -4,7 +4,7 @@
  const valid=x=>(typeof x==='number'||typeof x==='string'&&x.trim()!=='')&&Number.isFinite(Number(x));
  const levels={IBGE_DISTRICT:['distrito','distritos'],OPERATIONAL_NEIGHBORHOOD:['bairro','bairros'],MANAUS_NEIGHBORHOOD:['bairro','bairros'],CENSO2022_NEIGHBORHOOD:['bairro','bairros'],INCID_PLANNING_UNIT:['UP','UPs'],SP_DISTRICT:['distrito','distritos'],SP_SUBPREFECTURE:['subprefeitura','subprefeituras'],RJ_ADMINISTRATIVE_REGION:['RA','RAs'],RJ_NEIGHBORHOOD:['bairro','bairros'],RJ_PLANNING_AREA:['área','áreas'],setor:['setor','setores'],ap:['AP','APs']};
  const direction=p=>/HIGHER_IS_WORSE|DEPRIVATION|PRIVA/i.test(p?.semantic_direction||p?.direction||'')?'deprivation':/HIGHER_IS_BETTER|COVERAGE|FAVORABLE/i.test(p?.semantic_direction||p?.direction||'')?'coverage':'descriptive';
- const palette=p=>(direction(p)==='deprivation'?ACU_R75.palettes.red:ACU_R75.palettes.blue).slice();
+ const palette=p=>{const d=direction(p),base=(d==='deprivation'?ACU_R75.palettes.red:ACU_R75.palettes.blue).slice();return window.ACU_R98_FCU?.basePalette(base,d)||base;};
  const interpretation=p=>direction(p)==='deprivation'?'Mais escuro = maior privação':direction(p)==='coverage'?'Mais escuro = maior cobertura':'Mais escuro = maior valor';
  function readableThresholds(cuts,values){
   const bucket=(v,ts)=>ts.filter(t=>v>t).length;
