@@ -1,0 +1,20 @@
+/* Transparent texture is independent of every existing thematic color scale. */
+.r98-fcu-control[hidden] { display:none !important; }
+.leaflet-r98FCU-pane,.leaflet-r98FCU-pane svg,.leaflet-r98FCU-pane path { pointer-events:none !important; }
+.r98-map-control { padding:11px 13px; background:#fff; color:#244052; border:1px solid #dce7ed; border-radius:12px; font-size:11px; }
+.r98-hatch-guide > summary { cursor:pointer; display:flex; flex-wrap:wrap; align-items:baseline; gap:3px 9px; }
+.r98-hatch-guide > summary strong { font-size:12px; }
+.r98-hatch-guide > summary > span { color:#607281; font-size:10px; }
+.r98-hatch-rule { flex-basis:100%; margin:3px 0 0; font-weight:400; font-size:11px; }
+.r98-hatch-scale { padding:0; margin:10px 0 0; list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; }
+.r98-hatch-scale li { display:flex; align-items:center; gap:6px; font-size:11px; }
+.r98-hatch-scale svg { flex-shrink:0; }
+.r98-hatch-status { margin:8px 0 5px; font-size:10px; }
+.r98-reference { display:flex; align-items:center; gap:6px; font-size:10px; margin:5px 0; }
+.r98-reference i { width:18px; height:11px; border:1.2px dashed #677782; flex-shrink:0; }
+.r98-hatch-method { font-size:10px; line-height:1.55; margin:5px 0 8px; }
+.r98-hatch-method summary { cursor:pointer; padding:3px 0; }
+.r98-hatch-method p { margin:6px 0; }
+.r98-map-control button { border:0; border-radius:7px; background:#edf6f9; color:#17546d; font-family:inherit; font-weight:600; padding:7px 8px; font-size:11px; min-height:32px; cursor:pointer; }
+.r98-map-control :focus-visible { outline:2px solid #007fa5; outline-offset:3px; }
+@media(max-width:720px){ .r98-map-control button { min-height:40px; } }
