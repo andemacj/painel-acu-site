@@ -18,7 +18,7 @@
 .r98-map-control button { border:0; border-radius:7px; background:#edf6f9; color:#17546d; font-family:inherit; font-weight:600; padding:7px 8px; font-size:11px; min-height:32px; cursor:pointer; }
 .r98-map-control :focus-visible { outline:2px solid #007fa5; outline-offset:3px; }
 @media(max-width:720px){ .r98-map-control button { min-height:40px; } }
-.r99-fcu-tooltip { background:#fff; color:#244052; border:1px solid #c7d7e0; box-shadow:0 3px 14px #16384a24; border-radius:9px; padding:10px 12px; max-width:min(285px,calc(100vw - 36px)); white-space:normal; line-height:1.45; }
+.r99-fcu-tooltip { background:#fff; color:#244052; border:1px solid #c7d7e0; box-shadow:0 3px 14px #16384a24; border-radius:9px; padding:10px 12px; box-sizing:border-box; width:max-content; max-width:min(285px,calc(100vw - 36px)); white-space:normal; line-height:1.45; }
 .r99-fcu-tooltip strong,.r99-fcu-tooltip b,.r99-fcu-tooltip span,.r99-fcu-tooltip small { display:block; }
 .r99-fcu-tooltip strong { font-size:12px; margin-bottom:3px; }
 .r99-fcu-tooltip b { font-size:15px; }
