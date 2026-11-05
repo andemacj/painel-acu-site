@@ -1873,6 +1873,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
     if(state.layerState.pct){const rows=state.cityId==="belem"?((state.data.pct&&state.data.pct.generalizedAfricanMatrixPoints)||[]).filter(matchesTerritory):[];const markers=rows.map(item=>L.marker([Number(item.latitude),Number(item.longitude)],{icon:pctMarkerIcon(),riseOnHover:true}).bindTooltip(`<div class="acu-pct-tooltip"><strong>${esc(item.label)}</strong><span>${esc(item.neighborhood||"N/D")}</span><small>${esc(item.source||"")} · Localização generalizada para proteção</small></div>`,{direction:"top",className:"acu-pct-popup"}));state.markerLayers.pct=L.layerGroup(markers).addTo(state.map);messages.push(state.cityId==="belem"?`${rows.length} localização(ões) PCT generalizada(s).`:"PCT: dados não publicamente disponíveis; nenhum ponto exibido.");}
     if(window.ACU_R71_PANORAMA?.isActive())window.ACU_R71_PANORAMA.refreshLegend();else renderMapLegend();
     R77.mapLayer(state);
+    window.ACU_R96_FCU?.mapMount(state);
     state.map.r72Labels?.schedule();
     setMapStatus(R77.mapStatus()||messages.join(" ")||"Camadas territoriais prontas.",messages.some(item=>/pendente|não publicamente/.test(item))?"warning":"");
   }
@@ -2342,7 +2343,7 @@ const activeLevel=currentGeo()?.level,programContext=["AGENDA_CITY_TERRITORY","A
 
   function renderModule() {
     state.schoolFilters.wash="";
-    const networkBridge={state,geo:currentGeo,categoryLabel:publicEquipmentCategory,equipmentSection:()=>{if(state.mapControlSection!=="equipment")setMapControlSection("equipment");},refresh:refreshPointLayers,panorama:()=>{state.module="panorama";configureSelectors();renderModule();}};R77.connect(networkBridge);
+    const networkBridge={state,geo:currentGeo,categoryLabel:publicEquipmentCategory,equipmentSection:()=>{if(state.mapControlSection!=="equipment")setMapControlSection("equipment");},refresh:refreshPointLayers,panorama:()=>{state.module="panorama";configureSelectors();renderModule();}};R77.connect(networkBridge);window.ACU_R96_FCU?.connect(state);
     if(!ACU_R76R1.moduleVisible(state.cityId,state.module)){state.module="panorama";state.r76SelectionNotice="Tema retirado desta cidade; exibindo Panorama territorial.";configureSelectors();}
     document.body.dataset.activeModule=state.module;renderDataSituation();
     const mounted=window.ACU_R71_PANORAMA?.snapshot();

@@ -1,0 +1,52 @@
+/* A compact, optional layer; the existing thematic scale keeps its meaning. */
+.r96-fcu-section { --r96-accent:#72518b; }
+.r96-fcu-section > summary { border-inline-start:3px solid var(--r96-accent); border-radius:10px; }
+.r96-context { padding:12px 15px; }
+.r96-context p { margin:0 0 10px; max-width:95ch; }
+.r96-kicker { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#72518b; }
+.r96-comparisons { display:grid; gap:8px; max-width:680px; margin:14px 0; }
+.r96-bar-row { display:grid; grid-template-columns:minmax(130px,1fr) 2fr 54px; gap:10px; align-items:center; font-size:13px; }
+.r96-bar-row strong { text-align:right; font-variant-numeric:tabular-nums; }
+.r96-track { height:7px; border-radius:8px; background:#f0ebf4; overflow:hidden; }
+.r96-track i { display:block; height:100%; border-radius:8px; background:#72518b; }
+.r96-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.r96-fcu-section .r85-group { margin:8px 12px; }
+.r96-map-control { background:#fff; color:#244052; border-bottom:1px solid #e5dfea; padding:10px; border-radius:12px 12px 0 0; font-size:12px; }
+.r96-map-control button { min-height:34px; padding:5px 6px; font-size:12px; }
+.r96-map-control button,.r96-directory .r85-quiet,.r96-profile .r85-quiet { border:0; border-radius:8px; background:#edf6f9; color:#17546d; font-family:inherit; font-size:12px; font-weight:600; padding:8px 10px; cursor:pointer; }
+.r96-map-control button:hover,.r96-directory .r85-quiet:hover,.r96-profile .r85-quiet:hover { background:#dceef4; }
+.r96-fcu-section button:focus-visible,.r96-map-control :focus-visible,.r96-directory :focus-visible,.r96-profile :focus-visible { outline:2px solid #007fa5; outline-offset:3px; }
+.r96-layer-toggle { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; cursor:pointer; }
+.r96-layer-toggle input { width:17px; height:17px; accent-color:#72518b; flex-shrink:0; }
+.r96-layer-toggle small { display:block; font-size:10px; font-weight:400; color:#576b78; }
+.r96-layer-status { margin:5px 0; font-size:11px; line-height:1.4; }
+.r96-layer-key { display:grid; gap:5px; margin:8px 0; font-size:11px; }
+.r96-layer-key span { display:flex; gap:6px; align-items:center; }
+.r96-layer-key i { display:inline-block; width:18px; height:10px; border:2px solid #72518b; flex-shrink:0; }
+.r96-layer-key .r96-reference-key { border:1.5px dashed #66737b; }
+.r96-directory-tools { display:grid; grid-template-columns:2fr 1fr; gap:12px; }
+.r96-directory-tools label { display:grid; gap:4px; font-size:12px; }
+.r96-directory-tools input,.r96-directory-tools select { min-width:0; width:100%; min-height:40px; border:1px solid #c9dbe5; border-radius:7px; padding:7px; background:#fff; color:#244052; }
+.r96-list-row { width:100%; display:flex; align-items:center; justify-content:space-between; text-align:left; gap:12px; padding:11px 8px; border:0; border-bottom:1px solid #e2ebf0; border-radius:0; background:#fff; color:#205674; cursor:pointer; }
+.r96-list-row:hover,.r96-list-row:focus-visible { background:#f4f0f7; }
+.r96-list-row strong { font-size:14px; }
+.r96-list-row small { display:block; font-size:11px; margin-top:4px; color:#586f7d; }
+.r96-list-row > span:last-child { font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.r96-pagination { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 0; }
+.r96-pagination [disabled] { opacity:.45; cursor:default; }
+.r96-source { font-size:11px; color:#586f7d; line-height:1.6; }
+.r96-profile-lead { display:flex; gap:10px; align-items:baseline; margin:14px 0; }
+.r96-profile-lead strong { font-size:34px; color:#72518b; letter-spacing:-1px; }
+.r96-profile .r85-table-scroll { max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain; }
+.r96-profile-table { min-width:480px; }
+.r96-profile-table td { text-align:right; font-variant-numeric:tabular-nums; }
+.r96-method { margin:14px 0; font-size:13px; line-height:1.6; }
+.r96-method summary { cursor:pointer; font-weight:700; padding:10px 0; }
+.r96-directory [data-r96-list-status] { font-size:12px; }
+@media(max-width:760px){
+ .r96-directory-tools { grid-template-columns:1fr; }
+ .r96-bar-row { grid-template-columns:minmax(110px,1fr) 1.3fr 48px; gap:6px; font-size:12px; }
+ .r96-list-row { align-items:flex-start; }
+ .r96-list-row > span:last-child { white-space:normal; max-width:95px; text-align:right; }
+ .r96-map-control { padding:8px 10px; }
+}
