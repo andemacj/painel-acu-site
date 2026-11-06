@@ -11,7 +11,7 @@
   if(id==='program')return {html:'<p>Esta aba reúne os enunciados do guia e suas operacionalizações nas notas. As linhas de base 2024 de GA1/GA3 são documentais, sem validação independente. Os demais resultados dependem de registros elegíveis e os critérios abertos afetam somente a medida correspondente. Atividades e metas locais propostas são apresentadas separadamente, sem inferir execução ou contribuição causal.</p>',claims:[],expanded,city:o.cfg.city,geography:o.cfg.geography.id,tab:id};
   if(id==='overview'||id==='territory'){
    const total=t.find(r=>r.indicator_id==='demo_population_total_n'),pop=t.find(r=>r.indicator_id==='demo_age_0_19_n'),teen=t.find(r=>r.indicator_id==='demo_age_10_19_n');
-   let profile='Em '+E(geo)+', '+(total?'a população residente é de '+C(o,total)+' pessoas ('+E(total.period)+'; Censo/IBGE).':'a população residente não tem agregado publicável para o recorte.');
+   let profile='Em '+E(geo)+', '+(total?(total.cell?.r100_incid?'a população residente é estimada em ':'a população residente é de ')+C(o,total)+' pessoas ('+E(total.period)+(total.cell?.r100_incid?'; Prefeitura/INCID, com base no Censo 2022).':'; Censo/IBGE).'):'a população residente não tem agregado publicável para o recorte.');
    if(pop)profile+=' O grupo de 0–19 anos reúne '+C(o,pop)+' pessoas'+(validShare(pop)?', '+C(o,pop,'selection','percentage')+' '+h.shareUniverse(o,pop):'')+'.';
    if(expanded&&teen)profile+=' Entre elas, '+C(o,teen)+' têm 10–19 anos; as faixas se sobrepõem.';
    paragraphs.push(profile);
